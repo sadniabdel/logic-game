@@ -1,0 +1,209 @@
+# ZZLE - Logic Puzzle Game
+
+A standalone version of the ZZLE logic puzzle game with built-in level selector and auto-solver.
+
+## Features
+
+- **116 Challenging Levels** - Navigate a robot through grid-based puzzles
+- **Level Selector** - Jump to any level instantly
+- **Auto-Solver** - Get solutions using BFS pathfinding algorithm
+- **No Authentication** - Play without login or tracking
+- **Same Design & CSS** - Identical look and feel to the original
+
+## How to Play
+
+### Running the Game
+
+1. Open `index.html` in your web browser
+2. The game will load automatically
+
+### Using the Level Selector
+
+Located in the top-right corner:
+
+1. **Select a Level**: Choose from levels 1-116 in the dropdown
+2. **Load Level**: Click to load the selected level
+3. **Auto-Solve**: Click to automatically solve the current level
+
+### Game Controls
+
+- **FW (Forward)** - Move the robot forward one space
+- **TL (Turn Left)** - Rotate the robot 90° counter-clockwise
+- **TR (Turn Right)** - Rotate the robot 90° clockwise
+- **Function Slots** - Program sequences of moves
+- **Play Button** - Execute your programmed instructions
+
+### Auto-Solver
+
+The built-in auto-solver uses **Breadth-First Search (BFS)** pathfinding to find the shortest solution:
+
+1. Select a level from the dropdown
+2. Click "Auto-Solve Current Level"
+3. View the solution in the output panel
+4. Manually input the instructions into the game UI
+
+Example output:
+```
+Solution found!
+Level 8: FW, TL, FW, TR, FW
+Steps: 5
+Max allowed: 12
+
+Instructions:
+FW = Forward
+TL = Turn Left
+TR = Turn Right
+```
+
+## Game Objective
+
+Guide your robot to collect all stars (⭐) on the board by programming a sequence of movements within the instruction limit.
+
+### Board Elements
+
+- **1** - Walkable path
+- **5** - Star (goal)
+- **0** - Empty space (not walkable)
+
+### Player
+
+- Position: `(x, y)` coordinates
+- Direction: `0`=left, `1`=up, `2`=right, `3`=down
+
+## Console Commands
+
+Open browser DevTools (F12) to use advanced commands:
+
+```javascript
+// Fetch a specific level
+getLevel(8)
+
+// Solve a level manually
+const levelData = await getLevel(8);
+const solution = solveLevelBFS(levelData);
+console.log(solution);
+```
+
+## Technical Details
+
+### File Structure
+
+```
+logic-game/
+├── index.html              # Standalone game (no auth)
+├── game/zzle.html         # Original game (with auth)
+├── assets/
+│   ├── js/
+│   │   └── games/index.js # Main game logic
+│   ├── css/
+│   │   └── global.css     # Game styles
+│   └── zzle-levels/       # Level data (1-116.json)
+```
+
+### Removed Components
+
+Compared to the original `game/zzle.html`:
+
+- ❌ Authentication (inject.js)
+- ❌ Cloudflare tracking/analytics
+- ❌ Google Tag Manager
+- ❌ Login/registration requirements
+- ✅ Same game logic and UI
+- ✅ Same CSS styling
+- ✅ All 116 levels
+
+### Added Features
+
+- ✅ Level selector UI
+- ✅ Auto-solver with BFS algorithm
+- ✅ Solution viewer
+- ✅ Console helper functions
+- ✅ Keyboard shortcuts
+
+## Auto-Solver Algorithm
+
+The auto-solver uses **Breadth-First Search (BFS)** to guarantee the shortest path:
+
+1. **Initialize**: Start from player position and direction
+2. **Search**: Explore all possible moves (FW, TL, TR)
+3. **Track**: Mark visited states to avoid cycles
+4. **Find Goal**: Stop when robot reaches star position
+5. **Return Path**: Backtrack to get instruction sequence
+
+### Time Complexity
+
+- **O(V + E)** where V = board cells × directions, E = possible moves
+- Typically solves in milliseconds for small boards
+
+## Browser Compatibility
+
+- ✅ Chrome/Edge (Recommended)
+- ✅ Firefox
+- ✅ Safari
+- ⚠️ Internet Explorer (Not supported - use modern browser)
+
+## Development
+
+### Local Server (Optional)
+
+If you encounter CORS issues loading assets:
+
+```bash
+# Python 3
+python3 -m http.server 8000
+
+# Node.js
+npx http-server -p 8000
+
+# Then visit: http://localhost:8000
+```
+
+### Customization
+
+Edit `index.html` to customize:
+
+- **Colors**: Change CSS variables in `<style>` section
+- **Levels**: Modify JSON files in `assets/zzle-levels/`
+- **UI Position**: Adjust `#level-selector` CSS positioning
+
+## Credits
+
+- **Original Game**: ZZLE Puzzle Game
+- **Auto-Solver**: BFS Pathfinding Algorithm
+- **Standalone Version**: Removed authentication, added features
+
+## License
+
+This standalone version is for educational and personal use only.
+
+## Troubleshooting
+
+### Game Won't Load
+
+1. Check browser console (F12) for errors
+2. Ensure all asset files are in correct paths
+3. Try running from a local server (see Development section)
+
+### Auto-Solver Not Working
+
+1. Make sure you've selected a level
+2. Check console for error messages
+3. Verify level JSON files exist in `assets/zzle-levels/`
+
+### Level Selector Not Visible
+
+1. Check if it's hidden behind other elements
+2. Try zooming out (Ctrl/Cmd + -)
+3. Adjust `#level-selector` CSS positioning
+
+## Support
+
+For issues or questions, check:
+
+- Browser console (F12) for error messages
+- Network tab to verify asset loading
+- `CONSOLE_STRATEGY_GUIDE.md` for advanced strategies
+
+---
+
+**Enjoy solving puzzles! 🎮🧩⭐**

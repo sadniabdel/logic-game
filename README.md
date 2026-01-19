@@ -90,27 +90,40 @@ console.log(solution);
 
 ```
 logic-game/
-├── index.html              # Standalone game (no auth)
-├── game/zzle.html         # Original game (with auth)
+├── index.html                    # Standalone game (CLEAN - no auth!)
+├── README.md                     # This file
+├── CONSOLE_STRATEGY_GUIDE.md     # Browser console strategies
 ├── assets/
 │   ├── js/
-│   │   └── games/index.js # Main game logic
+│   │   ├── games/index.js        # Main game logic
+│   │   ├── chunk-*.js            # Game bundles (6 files, required)
+│   │   └── (inject.js REMOVED)   # No authentication!
 │   ├── css/
-│   │   └── global.css     # Game styles
-│   └── zzle-levels/       # Level data (1-116.json)
+│   │   ├── global.css            # Game styles
+│   │   └── font-styles.css       # Typography
+│   ├── fonts/                    # IBM Plex fonts
+│   ├── img/                      # Game assets
+│   └── zzle-levels/              # Level data (1-116.json)
+└── (game/ folder REMOVED)        # Original auth version deleted
 ```
 
-### Removed Components
+### Removed Files (Clean Repository!)
 
-Compared to the original `game/zzle.html`:
+All authentication, tracking, and unnecessary files have been removed:
 
-- ❌ Authentication (inject.js)
-- ❌ Cloudflare tracking/analytics
-- ❌ Google Tag Manager
-- ❌ Login/registration requirements
-- ✅ Same game logic and UI
-- ✅ Same CSS styling
-- ✅ All 116 levels
+**Deleted:**
+- ❌ `assets/js/inject.js` - grit:lab branding/authentication (213 lines)
+- ❌ `game/zzle.html` - original game with login requirements
+- ❌ Cloudflare beacon tracking script (vcd15cbe...)
+- ❌ Google Tag Manager references
+- ❌ All external analytics/tracking
+
+**What's Kept:**
+- ✅ Complete game logic (`games/index.js` + 6 chunk bundles)
+- ✅ All original CSS styling
+- ✅ All 116 puzzle levels (JSON files)
+- ✅ Game assets (fonts, images)
+- ✅ Same visual design and UX
 
 ### Added Features
 

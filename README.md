@@ -93,15 +93,30 @@ The **real puzzle data** is loaded dynamically from the server when playing the 
 2. Save each level's JSON to the `assets/zzle-levels/` folder
 3. Then run the generator
 
-### Quick Start (with placeholder data)
+### Two Solver Versions Available
 
+**Basic Solver** (`generate-solutions.js`):
 ```bash
-# Run the generator
 node generate-solutions.js
-
-# Output: zzle-solutions-YYYY-MM-DDTHH-MM-SS.csv
-# Note: All solutions will be "FW" (1 step) due to placeholder data
+# Handles: FW, TL, TR (basic pathfinding only)
+# Best for: Simple navigation puzzles
 ```
+
+**Advanced Solver** (`generate-solutions-advanced.js`):
+```bash
+node generate-solutions-advanced.js
+# Handles: FW, TL, TR, P1-P3 (paint), C1-C3 (conditionals)
+# Best for: Complex puzzles requiring color-based logic
+# Output: zzle-solutions-advanced-YYYY-MM-DDTHH-MM-SS.csv
+```
+
+The advanced solver includes:
+- **Paint operations** (P1, P2, P3) - Mark cells with colors
+- **Conditional execution** (C1, C2, C3) - Execute based on cell color
+- **Board state tracking** - Handles puzzles where cell colors change
+- **Extended BFS search** - Explores state space with board modifications
+
+Note: Both solvers will show "FW" (1 step) solutions with current placeholder data.
 
 ### CSV Format
 

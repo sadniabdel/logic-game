@@ -84,6 +84,50 @@ const solution = solveLevelBFS(levelData);
 console.log(solution);
 ```
 
+## CSV Solutions Generator
+
+Generate a CSV file with solutions for all 116 levels using the included Node.js script:
+
+### Quick Start
+
+```bash
+# Run the generator
+node generate-solutions.js
+
+# Output: zzle-solutions-YYYY-MM-DDTHH-MM-SS.csv
+```
+
+### CSV Format
+
+The generated CSV includes:
+
+| Column | Description |
+|--------|-------------|
+| Level | Level number (1-116) |
+| Solved | Yes/No - whether a solution was found |
+| Steps | Number of instructions in solution |
+| Max_Allowed | Maximum instructions allowed for this level |
+| Solution | Space-separated instruction sequence (e.g., "FW TL FW TR") |
+| Start_X | Player starting X position |
+| Start_Y | Player starting Y position |
+| Start_Direction | Player starting direction (0-3) |
+| Stars | Number of stars to collect |
+
+### Example Output
+
+```csv
+Level,Solved,Steps,Max_Allowed,Solution,Start_X,Start_Y,Start_Direction,Stars
+1,Yes,1,12,"FW",0,0,2,1
+8,Yes,5,12,"FW TL FW TR FW",13,11,1,1
+```
+
+### Use Cases
+
+- **Analyze puzzle difficulty** - Compare steps vs max allowed
+- **Study solution patterns** - Identify common instruction sequences
+- **Validate solver accuracy** - Test against known solutions
+- **Import to spreadsheet** - Further analysis in Excel/Google Sheets
+
 ## Technical Details
 
 ### File Structure

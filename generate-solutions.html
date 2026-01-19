@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZZLE Level Solutions Generator</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a191c;
+            color: white;
+        }
+        h1 {
+            color: #ffc959;
+        }
+        .container {
+            background: #2a2930;
+            border: 2px solid #ffc959;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        button {
+            background: #5562EB;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #6672f5;
+        }
+        button.success {
+            background: #4CAF50;
+        }
+        button.warning {
+            background: #ffc959;
+            color: #1a191c;
+        }
+        #progress {
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        #output {
+            background: #1a191c;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .log-success { color: #4CAF50; }
+        .log-error { color: #ff5555; }
+        .log-info { color: #ffc959; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background: #1a191c;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffc959;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 12px;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background: #1a191c;
+            color: #ffc959;
+        }
+        tr:nth-child(even) {
+            background: #25242a;
+        }
+        #preview {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 ZZLE Level Solutions Generator</h1>
+
+    <div class="container">
+        <h2>Generate Solutions CSV</h2>
+        <p>This tool will solve all 116 ZZLE levels using BFS pathfinding and export the solutions to a CSV file.</p>
+
+        <button id="solveBtn" onclick="solveAllLevels()">🚀 Solve All Levels</button>
+        <button id="downloadBtn" onclick="downloadCSV()" style="display:none;" class="success">⬇️ Download CSV</button>
+        <button id="previewBtn" onclick="togglePreview()" style="display:none;" class="warning">👁️ Preview Solutions</button>
+
+        <div id="progress"></div>
+
+        <div class="stats" id="stats" style="display:none;">
+            <div class="stat-box">
+                <div class="stat-number" id="totalLevels">0</div>
+                <div class="stat-label">Total Levels</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="solvedCount">0</div>
+                <div class="stat-label">Solved</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="unsolvedCount">0</div>
+                <div class="stat-label">Unsolved</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="avgSteps">0</div>
+                <div class="stat-label">Avg Steps</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h3>Output Log</h3>
+        <div id="output"></div>
+    </div>
+
+    <div class="container" id="previewContainer" style="display:none;">
+        <h3>Solutions Preview</h3>
+        <div id="preview"></div>
+    </div>
+
+    <script>
+        let solutionsData = [];
+        let csvContent = '';
+
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = `log-${type}`;
+            output.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        async function getLevel(levelNum) {
+            const response = await fetch(`/assets/zzle-levels/${levelNum}.json`);
+            return await response.json();
+        }
+
+        function solveLevelBFS(levelData) {
+            const {board, player, stars} = levelData;
+            const start = {x: player.x, y: player.y, dir: player.direction};
+
+            // Find star positions
+            const starPositions = [];
+            for (let y = 0; y < board.length; y++) {
+                for (let x = 0; x < board[y].length; x++) {
+                    if (board[y][x] === 5) {
+                        starPositions.push({x, y});
+                    }
+                }
+            }
+
+            if (starPositions.length === 0) return null;
+            const goal = starPositions[0];
+
+            // BFS to find path
+            const queue = [{...start, path: []}];
+            const visited = new Set([`${start.x},${start.y},${start.dir}`]);
+
+            // Direction vectors: 0=left, 1=up, 2=right, 3=down
+            const dx = [-1, 0, 1, 0];
+            const dy = [0, -1, 0, 1];
+
+            while (queue.length > 0) {
+                const current = queue.shift();
+
+                // Check if reached goal
+                if (current.x === goal.x && current.y === goal.y) {
+                    return current.path;
+                }
+
+                // Try moving forward
+                const newX = current.x + dx[current.dir];
+                const newY = current.y + dy[current.dir];
+
+                // Check if valid move
+                if (newY >= 0 && newY < 16 && newX >= 0 && newX < 16) {
+                    const cell = board[newY][newX];
+                    if ((cell === 1 || cell === 5) && !visited.has(`${newX},${newY},${current.dir}`)) {
+                        visited.add(`${newX},${newY},${current.dir}`);
+                        queue.push({
+                            x: newX,
+                            y: newY,
+                            dir: current.dir,
+                            path: [...current.path, 'FW']
+                        });
+                    }
+                }
+
+                // Try turning left
+                const leftDir = (current.dir + 3) % 4;
+                if (!visited.has(`${current.x},${current.y},${leftDir}`)) {
+                    visited.add(`${current.x},${current.y},${leftDir}`);
+                    queue.push({
+                        x: current.x,
+                        y: current.y,
+                        dir: leftDir,
+                        path: [...current.path, 'TL']
+                    });
+                }
+
+                // Try turning right
+                const rightDir = (current.dir + 1) % 4;
+                if (!visited.has(`${current.x},${current.y},${rightDir}`)) {
+                    visited.add(`${current.x},${current.y},${rightDir}`);
+                    queue.push({
+                        x: current.x,
+                        y: current.y,
+                        dir: rightDir,
+                        path: [...current.path, 'TR']
+                    });
+                }
+            }
+
+            return null; // No solution found
+        }
+
+        async function solveAllLevels() {
+            const solveBtn = document.getElementById('solveBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const previewBtn = document.getElementById('previewBtn');
+            const progress = document.getElementById('progress');
+            const stats = document.getElementById('stats');
+
+            solveBtn.disabled = true;
+            solveBtn.textContent = '⏳ Solving...';
+            downloadBtn.style.display = 'none';
+            previewBtn.style.display = 'none';
+            stats.style.display = 'none';
+
+            solutionsData = [];
+            log('Starting to solve all 116 levels...', 'info');
+
+            let solved = 0;
+            let unsolved = 0;
+            let totalSteps = 0;
+
+            for (let level = 1; level <= 116; level++) {
+                try {
+                    progress.innerHTML = `<strong>Processing:</strong> Level ${level}/116 (${Math.round(level/116*100)}%)`;
+
+                    const levelData = await getLevel(level);
+                    const solution = solveLevelBFS(levelData);
+
+                    const result = {
+                        level: level,
+                        solved: solution !== null,
+                        steps: solution ? solution.length : 0,
+                        solution: solution ? solution.join(' ') : 'NO SOLUTION',
+                        maxAllowed: levelData.functions[0].length,
+                        playerStartX: levelData.player.x,
+                        playerStartY: levelData.player.y,
+                        playerDirection: levelData.player.direction,
+                        starsCount: levelData.stars
+                    };
+
+                    solutionsData.push(result);
+
+                    if (solution) {
+                        solved++;
+                        totalSteps += solution.length;
+                        log(`Level ${level}: ✅ Solved in ${solution.length} steps`, 'success');
+                    } else {
+                        unsolved++;
+                        log(`Level ${level}: ❌ No solution found`, 'error');
+                    }
+
+                    // Small delay to prevent browser freeze
+                    if (level % 10 === 0) {
+                        await new Promise(resolve => setTimeout(resolve, 10));
+                    }
+                } catch (error) {
+                    log(`Level ${level}: ❌ Error - ${error.message}`, 'error');
+                    unsolved++;
+                    solutionsData.push({
+                        level: level,
+                        solved: false,
+                        steps: 0,
+                        solution: 'ERROR',
+                        maxAllowed: 0,
+                        playerStartX: 0,
+                        playerStartY: 0,
+                        playerDirection: 0,
+                        starsCount: 0
+                    });
+                }
+            }
+
+            // Generate CSV
+            generateCSV();
+
+            // Update stats
+            document.getElementById('totalLevels').textContent = '116';
+            document.getElementById('solvedCount').textContent = solved;
+            document.getElementById('unsolvedCount').textContent = unsolved;
+            document.getElementById('avgSteps').textContent = solved > 0 ? (totalSteps / solved).toFixed(1) : '0';
+            stats.style.display = 'grid';
+
+            // Update UI
+            progress.innerHTML = `<strong style="color: #4CAF50;">✅ Complete!</strong> Solved ${solved}/116 levels`;
+            log(`\n🎉 Processing complete! ${solved} levels solved, ${unsolved} unsolved.`, 'success');
+            log(`📊 Average steps: ${solved > 0 ? (totalSteps / solved).toFixed(1) : '0'}`, 'info');
+
+            solveBtn.disabled = false;
+            solveBtn.textContent = '🔄 Re-solve All Levels';
+            downloadBtn.style.display = 'inline-block';
+            previewBtn.style.display = 'inline-block';
+        }
+
+        function generateCSV() {
+            // CSV Header
+            const headers = [
+                'Level',
+                'Solved',
+                'Steps',
+                'Max_Allowed',
+                'Solution',
+                'Start_X',
+                'Start_Y',
+                'Start_Direction',
+                'Stars'
+            ];
+
+            csvContent = headers.join(',') + '\n';
+
+            // CSV Rows
+            solutionsData.forEach(row => {
+                const csvRow = [
+                    row.level,
+                    row.solved ? 'Yes' : 'No',
+                    row.steps,
+                    row.maxAllowed,
+                    `"${row.solution}"`, // Quote solution to handle spaces
+                    row.playerStartX,
+                    row.playerStartY,
+                    row.playerDirection,
+                    row.starsCount
+                ];
+                csvContent += csvRow.join(',') + '\n';
+            });
+
+            log('📄 CSV file generated successfully!', 'success');
+        }
+
+        function downloadCSV() {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `zzle-solutions-${timestamp}.csv`);
+            link.style.visibility = 'hidden';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            log('⬇️ CSV file downloaded!', 'success');
+        }
+
+        function togglePreview() {
+            const container = document.getElementById('previewContainer');
+            const preview = document.getElementById('preview');
+
+            if (container.style.display === 'none') {
+                // Generate preview table
+                let html = '<table><thead><tr>';
+                html += '<th>Level</th><th>Solved</th><th>Steps</th><th>Max</th><th>Solution</th>';
+                html += '</tr></thead><tbody>';
+
+                solutionsData.forEach(row => {
+                    const statusColor = row.solved ? '#4CAF50' : '#ff5555';
+                    html += `<tr>`;
+                    html += `<td>${row.level}</td>`;
+                    html += `<td style="color: ${statusColor};">${row.solved ? '✅ Yes' : '❌ No'}</td>`;
+                    html += `<td>${row.steps}</td>`;
+                    html += `<td>${row.maxAllowed}</td>`;
+                    html += `<td style="font-family: monospace;">${row.solution}</td>`;
+                    html += `</tr>`;
+                });
+
+                html += '</tbody></table>';
+                preview.innerHTML = html;
+                container.style.display = 'block';
+                document.getElementById('previewBtn').textContent = '🔼 Hide Preview';
+            } else {
+                container.style.display = 'none';
+                document.getElementById('previewBtn').textContent = '👁️ Preview Solutions';
+            }
+        }
+
+        // Initial log
+        log('ZZLE Solutions Generator ready!', 'success');
+        log('Click "Solve All Levels" to generate solutions...', 'info');
+    </script>
+</body>
+</html>

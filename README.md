@@ -86,15 +86,21 @@ console.log(solution);
 
 ## CSV Solutions Generator
 
-Generate a CSV file with solutions for all 116 levels using the included Node.js script:
+⚠️ **Important Limitation**: The level JSON files in this repository are **placeholder/template data**. All 116 files are identical with a simple 1-step puzzle (star is right next to the player).
 
-### Quick Start
+The **real puzzle data** is loaded dynamically from the server when playing the actual game. To get real solutions, you would need to:
+1. Capture level data from the live game's network traffic
+2. Save each level's JSON to the `assets/zzle-levels/` folder
+3. Then run the generator
+
+### Quick Start (with placeholder data)
 
 ```bash
 # Run the generator
 node generate-solutions.js
 
 # Output: zzle-solutions-YYYY-MM-DDTHH-MM-SS.csv
+# Note: All solutions will be "FW" (1 step) due to placeholder data
 ```
 
 ### CSV Format
@@ -121,7 +127,37 @@ Level,Solved,Steps,Max_Allowed,Solution,Start_X,Start_Y,Start_Direction,Stars
 8,Yes,5,12,"FW TL FW TR FW",13,11,1,1
 ```
 
-### Use Cases
+### Capturing Real Level Data
+
+To get actual puzzle solutions, capture level data from the live game:
+
+**Option 1: Browser Network Tab**
+1. Open the live game at https://01.gritlab.ax/
+2. Open DevTools (F12) → Network tab
+3. Play through levels
+4. Look for requests to `/api/zzle-levels/` or level data in responses
+5. Save each level's JSON to `assets/zzle-levels/{level}.json`
+
+**Option 2: Network Interception**
+```javascript
+// In browser console on the live game
+const originalFetch = window.fetch;
+window.fetch = async (...args) => {
+  const response = await originalFetch(...args);
+  const clone = response.clone();
+
+  if (args[0].includes('zzle')) {
+    clone.json().then(data => {
+      console.log('Level data:', JSON.stringify(data));
+      // Copy this and save to assets/zzle-levels/
+    });
+  }
+
+  return response;
+};
+```
+
+### Use Cases (with real data)
 
 - **Analyze puzzle difficulty** - Compare steps vs max allowed
 - **Study solution patterns** - Identify common instruction sequences

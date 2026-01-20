@@ -2,18 +2,12 @@
 
 let gameEngine;
 let solver;
-let smartSolver;
-let constraintSolver;
-let advancedSolver;
 let currentProgram = [];
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     gameEngine = new GameEngine();
-    solver = new Solver();
-    smartSolver = new SmartSolver();
-    constraintSolver = new ConstraintSolver();
-    advancedSolver = new AdvancedSolver();
+    solver = new FinalSolver();
 
     initializeLevelSelector();
     setupEventListeners();
@@ -675,16 +669,16 @@ async function autoSolve() {
 
     const output = document.getElementById('solver-output');
     output.classList.add('show');
-    output.innerHTML = '<div>🚀 Advanced solver (prioritized iterative deepening)...</div>';
+    output.innerHTML = '<div>⚡ Solving with loop detection...</div>';
 
-    advancedSolver.stop();
+    solver.stop();
 
     try {
-        const result = await advancedSolver.solve(
+        const result = await solver.solve(
             gameEngine.levelData,
             30000,
-            (tested, limits) => {
-                output.innerHTML = `<div>${limits}... (${tested.toLocaleString()} programs)</div>`;
+            (tested, depth) => {
+                output.innerHTML = `<div>${depth}... (${tested.toLocaleString()} programs)</div>`;
             }
         );
 
@@ -692,11 +686,11 @@ async function autoSolve() {
             currentProgram = result.program;
 
             let html = `<div style="color: #28a745;">✓ Solution found!</div>`;
-            html += `<div>${result.steps} steps, ${result.instrCount} instructions, tested ${result.tested || 0} programs</div><br>`;
+            html += `<div>${result.steps} steps, tested ${result.tested.toLocaleString()} programs</div><br>`;
 
             result.program.forEach((func, i) => {
                 if (func.length > 0) {
-                    const funcStr = func.map(instr => advancedSolver.instructionToString(instr)).join(', ');
+                    const funcStr = func.map(instr => solver.instructionToString(instr)).join(', ');
                     html += `<div><strong>F${i}:</strong> [${funcStr}]</div>`;
                 }
             });
@@ -709,7 +703,7 @@ async function autoSolve() {
             if (result.cancelled) reason = 'Search cancelled';
             if (result.timeout) reason = 'Search timeout';
 
-            output.innerHTML = `<div style="color: #dc3545;">✗ ${reason}</div><div>Tested ${result.tested || 0} programs</div>`;
+            output.innerHTML = `<div style="color: #dc3545;">✗ ${reason}</div><div>Tested ${result.tested.toLocaleString()} programs</div>`;
         }
     } catch (error) {
         output.innerHTML = `<div style="color: #dc3545;">Error: ${error.message}</div>`;

@@ -1,88 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZZLE - Logic Puzzle Game</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>ZZLE</h1>
-            <p class="subtitle">Program the robot to collect all stars</p>
-        </header>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="theme-color" content="#000000">
 
-        <div class="controls">
-            <div class="level-selector">
-                <label for="level-select">Level:</label>
-                <select id="level-select"></select>
-                <button id="load-level-btn" class="btn btn-primary">Load Level</button>
-            </div>
-            <div class="game-controls">
-                <button id="run-btn" class="btn btn-success">▶ Run</button>
-                <button id="step-btn" class="btn">⏯ Step</button>
-                <button id="reset-btn" class="btn">↻ Reset</button>
-                <button id="solve-btn" class="btn btn-warning">🤖 Auto Solve</button>
-            </div>
-        </div>
+    <link rel="preload" as="font" href="assets/fonts/IBMPlexSans-light-latin.woff2">
+    <link rel="preload" as="font" href="assets/fonts/IBMPlexMono-regular-latin.woff2">
+    <link rel="preload" as="font" href="assets/fonts/IBMPlexMono-light-latin.woff2">
 
-        <div class="game-layout">
-            <div class="left-panel">
-                <div class="board-container">
-                    <h3>Board</h3>
-                    <canvas id="game-board" width="512" height="512"></canvas>
-                    <div class="game-info">
-                        <div class="info-item">
-                            <span class="label">Stars:</span>
-                            <span id="stars-count">0</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Steps:</span>
-                            <span id="steps-count">0</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Position:</span>
-                            <span id="position">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Direction:</span>
-                            <span id="direction">-</span>
-                        </div>
-                    </div>
-                </div>
+    <link rel="stylesheet" type="text/css" href="assets/css/global.css" />
+    <link rel="stylesheet" type="text/css" href="assets/css/game.css" />
 
-                <div class="instructions-palette">
-                    <h3>Available Instructions</h3>
-                    <div id="palette-instructions"></div>
-                </div>
-            </div>
+    <title>ZZLE - Logic Game</title>
+  </head>
+  <body class="dark-theme">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
 
-            <div class="right-panel">
-                <div class="program-editor">
-                    <h3>Program Functions</h3>
-                    <div id="functions-container"></div>
-                </div>
-
-                <div class="execution-view">
-                    <h3>Execution Stack <span id="stack-size">(0)</span></h3>
-                    <div id="stack-display"></div>
-                </div>
-
-                <div class="solver-output">
-                    <h3>Solver Output</h3>
-                    <div id="solver-result"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="status-bar">
-            <span id="status-message">Ready</span>
-        </div>
+    <!-- Level Selector UI -->
+    <div id="level-selector">
+      <h3>Level Controls</h3>
+      <select id="level-select">
+        <option value="">Select Level...</option>
+      </select>
+      <button id="load-level-btn">Load Level</button>
+      <button id="auto-solve-btn" class="auto-solve">Auto-Solve</button>
+      <div id="solver-output"></div>
     </div>
 
-    <script src="game-engine.js"></script>
-    <script src="solver.js"></script>
-    <script src="ui.js"></script>
-</body>
+    <!-- Game Container -->
+    <div id="root">
+      <nav id="nav-placeholder"></nav>
+      <div id="game-container">
+        <div class="game-wrapper">
+          <div class="game-board-section">
+            <canvas id="game-board" width="512" height="512"></canvas>
+            <div class="game-info">
+              <div class="info-row">
+                <span class="label">Stars:</span>
+                <span id="stars-count">0</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Steps:</span>
+                <span id="steps-count">0</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Position:</span>
+                <span id="position">-</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Direction:</span>
+                <span id="direction">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="game-controls-section">
+            <div class="control-panel">
+              <h3>Available Instructions</h3>
+              <div id="palette-instructions"></div>
+            </div>
+
+            <div class="control-panel">
+              <h3>Program Functions</h3>
+              <div id="functions-container"></div>
+            </div>
+
+            <div class="control-panel">
+              <h3>Execution Stack <span id="stack-size">(0)</span></h3>
+              <div id="stack-display"></div>
+            </div>
+
+            <div class="button-row">
+              <button id="run-btn" class="btn btn-run">▶ Run</button>
+              <button id="step-btn" class="btn btn-step">⏯ Step</button>
+              <button id="reset-btn" class="btn btn-reset">↻ Reset</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Scripts -->
+    <script src="assets/js/game-engine.js"></script>
+    <script src="assets/js/solver.js"></script>
+    <script src="assets/js/ui.js"></script>
+  </body>
 </html>

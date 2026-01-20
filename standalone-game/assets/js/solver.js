@@ -1,4 +1,4 @@
-// Auto Solver
+// Auto Solver with Program Synthesis
 
 class Solver {
     constructor() {
@@ -194,7 +194,7 @@ class Solver {
         let tested = 0;
 
         // Iterative deepening
-        for (let maxTotal = 1; maxTotal <= 12; maxTotal++) {
+        for (let maxTotal = 1; maxTotal <= 10; maxTotal++) {
             if (!this.running) {
                 return { solved: false, tested, cancelled: true };
             }
@@ -241,9 +241,4 @@ class Solver {
         }
         return opcodeName;
     }
-}
-
-// Export
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { Solver };
 }

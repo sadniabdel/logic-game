@@ -1,120 +1,114 @@
-# ZZLE - Standalone Game
+# ZZLE Standalone Game
 
-A complete, clean implementation of the ZZLE logic puzzle game with correct game rules and auto-solver.
+A complete, standalone implementation of the ZZLE logic puzzle game with the exact same visual design as the original.
 
 ## Features
 
-- **Visual Game Board**: 16x16 grid with color-coded tiles and star visualization
-- **Program Editor**: Build programs using up to 3 functions (F0, F1, F2)
-- **Execution Stack**: Real-time visualization of instruction execution
-- **Step-by-Step Execution**: Step through your program one instruction at a time
-- **Auto Solver**: Automatic program synthesis solver with progress tracking
-- **116 Levels**: Full level support with proper JSON loading
+- **Identical Visual Design**: Same dark theme (#1a191c), colors, and IBM Plex fonts as the original
+- **Correct Game Mechanics**: Stack-based execution following exact game rules
+- **116 Levels**: Full level support
+- **Program Synthesis Solver**: Auto-solve with advanced algorithm
+- **No Dependencies**: Just open `index.html` in your browser
+
+## File Structure
+
+```
+standalone-game/
+├── index.html              # Main game page
+├── assets/
+│   ├── css/
+│   │   ├── global.css      # Global styles (from original)
+│   │   ├── font-styles.css # Font definitions (from original)
+│   │   └── game.css        # Game-specific styles
+│   ├── fonts/
+│   │   ├── IBMPlexSans-light-latin.woff2
+│   │   ├── IBMPlexMono-regular-latin.woff2
+│   │   └── IBMPlexMono-light-latin.woff2
+│   └── js/
+│       ├── game-engine.js  # Core game logic
+│       ├── solver.js       # Auto-solver
+│       └── ui.js           # UI controller
+```
 
 ## How to Play
 
-1. **Open the game**: Open `index.html` in a web browser
-2. **Select a level**: Choose from 116 levels using the dropdown
-3. **Understand the goal**: Collect all stars (★) by programming the robot
-4. **Program the robot**: Use available instructions to build functions
-5. **Run your program**: Execute and watch the robot move
+1. **Open the game**: Open `index.html` in any modern browser
+2. **Select a level**: Use the dropdown in the top-right (Levels 1-116)
+3. **Auto-solve**: Click "Auto-Solve" to find a solution automatically
+4. **Run program**: Click "Run" to execute the program
+5. **Step through**: Click "Step" to debug step-by-step
 
 ## Game Rules
 
 ### Board & Tiles
-- **Void tiles** (black): Robot dies if it enters
-- **Color tiles** (1, 2, 3): Walkable paths in different colors
-- **Stars**: Collected only when robot moves onto them (not when standing)
+- **Void tiles** (black): Robot dies if entering
+- **Color tiles** (1-3): Walkable paths
+- **Stars** (★): Collected when robot moves onto them
 
 ### Instructions
 
 **Movement:**
-- `FW` - Move forward in current direction
-- `TL` - Turn left (90°)
-- `TR` - Turn right (90°)
+- `FW` - Move forward
+- `TL` - Turn left
+- `TR` - Turn right
 
 **Painting:**
-- `P1` - Paint current tile color 1 (red)
-- `P2` - Paint current tile color 2 (green)
-- `P3` - Paint current tile color 3 (blue)
+- `P1`, `P2`, `P3` - Paint tile with color 1, 2, or 3
 
 **Functions:**
-- `F0` - Call function 0
-- `F1` - Call function 1
-- `F2` - Call function 2
+- `F0`, `F1`, `F2` - Call function 0, 1, or 2
 
-**Conditionals** (combine with any instruction):
-- `C1+X` - Execute instruction X only if on color 1
-- `C2+X` - Execute instruction X only if on color 2
-- `C3+X` - Execute instruction X only if on color 3
+**Conditionals:**
+- `C1+X`, `C2+X`, `C3+X` - Execute instruction X only if on specific color
 
-### How It Works
+### Execution Model
 
-1. **Stack-Based Execution**: Program starts by loading F0 onto the execution stack
-2. **Instruction Prepending**: Function calls prepend their instructions to the front of the stack
-3. **Sequential Execution**: Instructions are popped from the front of the stack and executed
-4. **Recursive Calls**: Functions can call themselves for loops
+- **Stack-based**: Program starts by loading F0 onto execution stack
+- **Instruction prepending**: Function calls prepend their instructions to front of stack
+- **Sequential execution**: Instructions popped from front and executed
+- **Recursive calls**: Functions can call themselves
 
-### Example Programs
+## Visual Design
 
-**Level 1** - Simple recursive forward loop:
-```
-F0 = [FW, F0]
-```
-Robot moves forward repeatedly until it collects the star.
+The standalone game uses the exact same visual elements as the original:
 
-**Level 5** - Spiral navigation:
-```
-F0 = [FW, TL, FW, TR, F0]
-```
-Robot alternates between moving and turning to navigate a spiral path.
-
-**Level 9** - Conditional navigation:
-```
-F0 = [FW, C1+TL, C1+FW, TR, F0]
-```
-Robot turns left only when on color 1 tiles.
-
-## Auto Solver
-
-The built-in solver uses **program synthesis**:
-
-1. Generates candidate programs of increasing complexity
-2. Tests each program by simulating execution
-3. Returns the first working solution found
-
-**Performance:**
-- Simple levels (1-5 instructions): < 1 second
-- Medium levels (5-8 instructions): 1-10 seconds
-- Complex levels (8-12 instructions): 10-30 seconds
-- Some levels may timeout if they require complex multi-function programs
+- **Background**: `#1a191c` (dark charcoal)
+- **Primary accent**: `#ffc959` (yellow/gold)
+- **Interactive elements**: `#5562EB` (purple/blue)
+- **Panels**: `#2a2930` (dark gray)
+- **Typography**: IBM Plex Sans Light, IBM Plex Mono Regular
 
 ## Technical Details
 
 ### Direction Encoding
-JSON uses: `0=left, 1=up, 2=right, 3=down`
+```
+0 = Left
+1 = Up
+2 = Right
+3 = Down
+```
 
 ### Instruction Encoding
 Each instruction slot stores one integer:
-- `instruction = condition * 100 + opcode`
-- Examples: `1` = FW, `201` = C2+FW, `305` = C3+P2
+```
+instruction = condition * 100 + opcode
+```
 
-### Win Condition
+Examples:
+- `1` = FW (forward)
+- `201` = C2+FW (if on color 2, move forward)
+- `305` = C3+P2 (if on color 3, paint color 2)
+
+### Win/Fail Conditions
+
+**Win:**
 - Collect all stars (stars counter reaches 0)
 
-### Failure Conditions
+**Fail:**
 - Move out of bounds
 - Move onto void tile (value 0)
 - Stack becomes empty before collecting all stars
 - Stack overflow (> 100 instructions)
-
-## Files
-
-- `index.html` - Main game interface
-- `style.css` - Visual styling
-- `game-engine.js` - Core game logic with correct rules
-- `solver.js` - Auto-solver with program synthesis
-- `ui.js` - UI controller and event handlers
 
 ## Browser Compatibility
 
@@ -123,4 +117,16 @@ Works in all modern browsers:
 - Firefox
 - Safari
 
-No build step or server required - just open `index.html` in your browser!
+## Development
+
+The game is built with vanilla JavaScript - no build tools or frameworks needed.
+
+To modify:
+1. Edit HTML/CSS/JS files directly
+2. Refresh browser to see changes
+3. Check browser console for any errors
+
+## Credits
+
+Based on the original ZZLE game design and mechanics.
+Standalone implementation with correct game rules and program synthesis solver.

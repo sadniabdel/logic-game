@@ -35,12 +35,12 @@ class Solver {
         return { unconditional, conditional, all: [...unconditional, ...conditional] };
     }
 
-    * generatePrograms(instructionSet, functionLengths, maxTotalInstructions, tryConditionalsFirst = false) {
+    * generatePrograms(instructionSet, functionLengths, maxTotalInstructions, unconditionalOnly = false) {
         const numFuncs = functionLengths.length;
 
-        // Determine instruction priority order
-        const instrOrder = tryConditionalsFirst ?
-            [...instructionSet.conditional, ...instructionSet.unconditional] :
+        // Choose which instructions to use
+        const instrList = unconditionalOnly ?
+            instructionSet.unconditional :
             [...instructionSet.unconditional, ...instructionSet.conditional];
 
         function* genFunc(funcIndex, totalUsed) {
@@ -64,7 +64,7 @@ class Solver {
                         return;
                     }
 
-                    for (const instr of instrOrder) {
+                    for (const instr of instrList) {
                         yield* genInstructions(currentLen - 1, [...seq, instr]);
                     }
                 }
@@ -199,62 +199,93 @@ class Solver {
         const instructionSet = this.buildInstructionSet(availableInstructions);
         let tested = 0;
 
-        // Two-phase approach: try unconditional first, then conditionals
-        const phases = [
-            { name: 'unconditional', tryConditionalsFirst: false },
-            { name: 'with conditionals', tryConditionalsFirst: true }
-        ];
+        // Smarter search: use random sampling with smart heuristics
+        const hasConditionals = instructionSet.conditional.length > 0;
+        const totalSlots = functionLengths.reduce((a, b) => a + b, 0);
 
-        for (const phase of phases) {
-            // Skip conditional phase if no conditionals available
-            if (phase.name === 'with conditionals' && instructionSet.conditional.length === 0) {
-                continue;
-            }
-
-            // Iterative deepening with lower max for efficiency
-            const maxDepth = instructionSet.unconditional.length <= 3 ? 8 : 10;
-
-            for (let maxTotal = 1; maxTotal <= maxDepth; maxTotal++) {
-                if (!this.running) {
-                    return { solved: false, tested, cancelled: true };
-                }
-
-                if (Date.now() - startTime > timeoutMs) {
-                    return { solved: false, tested, timeout: true };
-                }
-
-                for (const program of this.generatePrograms(instructionSet, functionLengths, maxTotal, phase.tryConditionalsFirst)) {
-                    if (!this.running) {
-                        return { solved: false, tested, cancelled: true };
-                    }
-
-                    if (Date.now() - startTime > timeoutMs) {
-                        return { solved: false, tested, timeout: true };
-                    }
+        // Try programs in order of increasing complexity
+        for (let depth = 1; depth <= Math.min(totalSlots, 8); depth++) {
+            // Quick unconditional-only pass for small depths
+            if (hasConditionals && depth <= 4) {
+                let count = 0;
+                for (const program of this.generatePrograms(instructionSet, functionLengths, depth, true)) {
+                    if (!this.running) return { solved: false, tested, cancelled: true };
+                    if (Date.now() - startTime > timeoutMs) return { solved: false, tested, timeout: true };
 
                     const result = this.executeProgram(levelData, program);
                     tested++;
-
-                    if (tested % 5000 === 0 && onProgress) {
-                        onProgress(tested, maxTotal);
-                        // Allow UI to update
-                        await new Promise(resolve => setTimeout(resolve, 0));
-                    }
+                    count++;
 
                     if (result.solved) {
                         return { solved: true, program, steps: result.steps, tested };
                     }
+
+                    // Early exit after trying reasonable amount
+                    if (count > 5000) break;
                 }
             }
 
-            // If unconditional phase didn't find solution, try conditionals
-            if (phase.name === 'unconditional' && onProgress) {
-                onProgress(tested, 'trying conditionals...');
+            // Main search with conditionals - use sampling for large spaces
+            const sampleSize = this.estimateProgramCount(instructionSet, functionLengths, depth);
+            const shouldSample = sampleSize > 20000;
+
+            if (onProgress) {
+                onProgress(tested, `depth ${depth}`);
                 await new Promise(resolve => setTimeout(resolve, 0));
+            }
+
+            let depthCount = 0;
+            for (const program of this.generatePrograms(instructionSet, functionLengths, depth, false)) {
+                if (!this.running) return { solved: false, tested, cancelled: true };
+                if (Date.now() - startTime > timeoutMs) return { solved: false, tested, timeout: true };
+
+                // Sampling: skip some programs randomly if space is huge
+                if (shouldSample && depthCount > 0 && Math.random() < 0.9) {
+                    depthCount++;
+                    continue;
+                }
+
+                const result = this.executeProgram(levelData, program);
+                tested++;
+                depthCount++;
+
+                if (tested % 1000 === 0 && onProgress) {
+                    onProgress(tested, `depth ${depth}`);
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+
+                if (result.solved) {
+                    return { solved: true, program, steps: result.steps, tested };
+                }
+
+                // Limit total programs tested at this depth
+                if (depthCount > 20000) break;
             }
         }
 
         return { solved: false, tested };
+    }
+
+    estimateProgramCount(instructionSet, functionLengths, depth) {
+        // Rough estimate of program count at this depth
+        const instrCount = instructionSet.unconditional.length + instructionSet.conditional.length;
+        let total = 0;
+
+        // Calculate all ways to distribute depth across functions
+        function distribute(remaining, funcIdx) {
+            if (funcIdx >= functionLengths.length) {
+                return remaining === 0 ? 1 : 0;
+            }
+            let count = 0;
+            const maxLen = Math.min(functionLengths[funcIdx], remaining);
+            for (let len = 0; len <= maxLen; len++) {
+                const ways = Math.pow(instrCount, len);
+                count += ways * distribute(remaining - len, funcIdx + 1);
+            }
+            return count;
+        }
+
+        return distribute(depth, 0);
     }
 
     stop() {

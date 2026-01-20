@@ -35,12 +35,12 @@ class Solver {
         return { unconditional, conditional, all: [...unconditional, ...conditional] };
     }
 
-    * generatePrograms(instructionSet, functionLengths, maxTotalInstructions, tryConditionalsFirst = false) {
+    * generatePrograms(instructionSet, functionLengths, maxTotalInstructions, unconditionalOnly = false) {
         const numFuncs = functionLengths.length;
 
-        // Determine instruction priority order
-        const instrOrder = tryConditionalsFirst ?
-            [...instructionSet.conditional, ...instructionSet.unconditional] :
+        // Choose which instructions to use
+        const instrList = unconditionalOnly ?
+            instructionSet.unconditional :
             [...instructionSet.unconditional, ...instructionSet.conditional];
 
         function* genFunc(funcIndex, totalUsed) {
@@ -64,7 +64,7 @@ class Solver {
                         return;
                     }
 
-                    for (const instr of instrOrder) {
+                    for (const instr of instrList) {
                         yield* genInstructions(currentLen - 1, [...seq, instr]);
                     }
                 }
@@ -199,62 +199,91 @@ class Solver {
         const instructionSet = this.buildInstructionSet(availableInstructions);
         let tested = 0;
 
-        // Two-phase approach: try unconditional first, then conditionals
-        const phases = [
-            { name: 'unconditional', tryConditionalsFirst: false },
-            { name: 'with conditionals', tryConditionalsFirst: true }
-        ];
+        // Key insight: most solutions use only a small subset of available instructions
+        // Try programs using instruction subsets of increasing size
+        const allInstr = [...instructionSet.unconditional, ...instructionSet.conditional];
+        const maxInstrInSubset = Math.min(allInstr.length, 8);
 
-        for (const phase of phases) {
-            // Skip conditional phase if no conditionals available
-            if (phase.name === 'with conditionals' && instructionSet.conditional.length === 0) {
-                continue;
-            }
+        for (let subsetSize = 3; subsetSize <= maxInstrInSubset; subsetSize++) {
+            // Generate instruction subsets to try
+            const subsets = this.generateInstructionSubsets(allInstr, subsetSize, instructionSet.unconditional);
 
-            // Iterative deepening with lower max for efficiency
-            const maxDepth = instructionSet.unconditional.length <= 3 ? 8 : 10;
+            for (const subset of subsets) {
+                if (!this.running) return { solved: false, tested, cancelled: true };
+                if (Date.now() - startTime > timeoutMs) return { solved: false, tested, timeout: true };
 
-            for (let maxTotal = 1; maxTotal <= maxDepth; maxTotal++) {
-                if (!this.running) {
-                    return { solved: false, tested, cancelled: true };
-                }
+                // Try all programs using only this subset
+                const subsetInstrSet = { unconditional: subset, conditional: [], all: subset };
+                const maxDepth = Math.min(functionLengths.reduce((a, b) => a + b, 0), 8);
 
-                if (Date.now() - startTime > timeoutMs) {
-                    return { solved: false, tested, timeout: true };
-                }
+                for (let depth = 1; depth <= maxDepth; depth++) {
+                    let depthCount = 0;
+                    const maxPerDepth = 5000;
 
-                for (const program of this.generatePrograms(instructionSet, functionLengths, maxTotal, phase.tryConditionalsFirst)) {
-                    if (!this.running) {
-                        return { solved: false, tested, cancelled: true };
-                    }
+                    for (const program of this.generatePrograms(subsetInstrSet, functionLengths, depth, false)) {
+                        if (!this.running) return { solved: false, tested, cancelled: true };
+                        if (Date.now() - startTime > timeoutMs) return { solved: false, tested, timeout: true };
 
-                    if (Date.now() - startTime > timeoutMs) {
-                        return { solved: false, tested, timeout: true };
-                    }
+                        const result = this.executeProgram(levelData, program);
+                        tested++;
+                        depthCount++;
 
-                    const result = this.executeProgram(levelData, program);
-                    tested++;
+                        if (tested % 1000 === 0 && onProgress) {
+                            onProgress(tested, `subset ${subsetSize}, depth ${depth}`);
+                            await new Promise(resolve => setTimeout(resolve, 0));
+                        }
 
-                    if (tested % 5000 === 0 && onProgress) {
-                        onProgress(tested, maxTotal);
-                        // Allow UI to update
-                        await new Promise(resolve => setTimeout(resolve, 0));
-                    }
+                        if (result.solved) {
+                            return { solved: true, program, steps: result.steps, tested };
+                        }
 
-                    if (result.solved) {
-                        return { solved: true, program, steps: result.steps, tested };
+                        if (depthCount >= maxPerDepth) break;
                     }
                 }
-            }
-
-            // If unconditional phase didn't find solution, try conditionals
-            if (phase.name === 'unconditional' && onProgress) {
-                onProgress(tested, 'trying conditionals...');
-                await new Promise(resolve => setTimeout(resolve, 0));
             }
         }
 
         return { solved: false, tested };
+    }
+
+    * generateInstructionSubsets(allInstr, size, priorityInstr) {
+        // Generate useful instruction subsets
+        // Priority: include function calls (F0, F1, F2) and movement (FW, TL, TR)
+        const funcCalls = allInstr.filter(i => i >= 7 && i <= 9);
+        const movement = allInstr.filter(i => i >= 1 && i <= 3);
+        const paint = allInstr.filter(i => i >= 4 && i <= 6);
+        const conditional = allInstr.filter(i => i >= 100);
+
+        // Strategy 1: Movement + conditionals
+        if (size >= 3 && movement.length > 0 && conditional.length > 0) {
+            const base = movement.slice(0, Math.min(2, size - 1));
+            for (let i = 0; i < Math.min(conditional.length, size - base.length); i++) {
+                yield [...base, ...conditional.slice(i, i + size - base.length)];
+            }
+        }
+
+        // Strategy 2: Movement + paint + conditionals
+        if (size >= 4 && movement.length > 0 && paint.length > 0 && conditional.length > 0) {
+            yield [...movement.slice(0, 2), ...paint.slice(0, 1), ...conditional.slice(0, size - 3)];
+        }
+
+        // Strategy 3: Include function calls for recursive solutions
+        if (size >= 4 && funcCalls.length > 0 && movement.length > 0) {
+            yield [...movement.slice(0, 2), ...funcCalls.slice(0, Math.min(2, size - 2)), ...conditional.slice(0, Math.max(0, size - 4))];
+        }
+
+        // Strategy 4: Random useful subsets
+        for (let attempt = 0; attempt < 5; attempt++) {
+            const subset = [];
+            // Always include at least one movement
+            if (movement.length > 0) subset.push(movement[Math.floor(Math.random() * movement.length)]);
+            // Fill rest randomly
+            while (subset.length < size && allInstr.length > 0) {
+                const instr = allInstr[Math.floor(Math.random() * allInstr.length)];
+                if (!subset.includes(instr)) subset.push(instr);
+            }
+            if (subset.length === size) yield subset;
+        }
     }
 
     stop() {

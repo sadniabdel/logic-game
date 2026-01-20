@@ -260,8 +260,3 @@ class GameEngine {
         return opcodeName;
     }
 }
-
-// Export for use in other scripts
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { GameEngine, INST, INST_NAMES };
-}

@@ -30,18 +30,20 @@ function initializeLevelSelector() {
 function setupEventListeners() {
     document.getElementById('load-level-btn').addEventListener('click', () => {
         const levelNum = parseInt(document.getElementById('level-select').value);
-        loadLevel(levelNum);
+        if (levelNum) {
+            loadLevel(levelNum);
+        }
     });
 
     document.getElementById('run-btn').addEventListener('click', runProgram);
     document.getElementById('step-btn').addEventListener('click', stepProgram);
     document.getElementById('reset-btn').addEventListener('click', resetGame);
-    document.getElementById('solve-btn').addEventListener('click', autoSolve);
+    document.getElementById('auto-solve-btn').addEventListener('click', autoSolve);
 }
 
 async function loadLevel(levelNum) {
     try {
-        const response = await fetch(`../assets/zzle-levels/${levelNum}.json`);
+        const response = await fetch(`../../assets/zzle-levels/${levelNum}.json`);
         const levelData = await response.json();
 
         gameEngine.loadLevel(levelData);
@@ -51,8 +53,11 @@ async function loadLevel(levelNum) {
 
         renderUI();
         setStatus(`Level ${levelNum} loaded`);
+
+        // Update selector
+        document.getElementById('level-select').value = levelNum;
     } catch (error) {
-        setStatus(`Error loading level ${levelNum}: ${error.message}`, true);
+        setStatus(`Error loading level ${levelNum}: ${error.message}`);
     }
 }
 
@@ -74,7 +79,7 @@ function renderBoard() {
     const cellSize = 32;
 
     // Clear canvas
-    ctx.fillStyle = '#f8f9fa';
+    ctx.fillStyle = '#1a191c';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Draw grid
@@ -89,9 +94,9 @@ function renderBoard() {
 
             // Draw tile
             if (tileValue === 0) {
-                ctx.fillStyle = '#212529';
+                ctx.fillStyle = '#0a090c';
             } else {
-                const colors = ['#e9ecef', '#ffcccc', '#ccffcc', '#ccccff'];
+                const colors = ['#2a2930', '#4a2929', '#294a29', '#29294a'];
                 ctx.fillStyle = colors[color];
             }
 
@@ -99,7 +104,7 @@ function renderBoard() {
 
             // Draw star
             if (hasStar) {
-                ctx.fillStyle = '#ffc107';
+                ctx.fillStyle = '#ffc959';
                 ctx.font = 'bold 20px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -107,7 +112,7 @@ function renderBoard() {
             }
 
             // Draw grid lines
-            ctx.strokeStyle = '#dee2e6';
+            ctx.strokeStyle = '#3a3940';
             ctx.lineWidth = 1;
             ctx.strokeRect(px, py, cellSize, cellSize);
         }
@@ -117,7 +122,7 @@ function renderBoard() {
     const px = state.x * cellSize;
     const py = state.y * cellSize;
 
-    ctx.fillStyle = '#667eea';
+    ctx.fillStyle = '#5562EB';
     ctx.beginPath();
     ctx.arc(px + cellSize / 2, py + cellSize / 2, cellSize / 3, 0, 2 * Math.PI);
     ctx.fill();
@@ -162,6 +167,10 @@ function renderInstructionsPalette() {
 
         container.appendChild(chip);
     });
+
+    if (activeInstructions.length === 0) {
+        container.innerHTML = '<div style="color: #666;">No instructions available</div>';
+    }
 }
 
 function renderProgramEditor() {
@@ -185,7 +194,7 @@ function renderProgramEditor() {
 
         const length = document.createElement('div');
         length.className = 'function-length';
-        length.textContent = `Max length: ${func.length}`;
+        length.textContent = `Max: ${func.length}`;
 
         header.appendChild(name);
         header.appendChild(length);
@@ -221,7 +230,7 @@ function renderStack() {
     const state = gameEngine.getState();
 
     if (!state) {
-        container.innerHTML = '<div style="color: #6c757d;">No program loaded</div>';
+        container.innerHTML = '<div style="color: #666;">No program loaded</div>';
         sizeSpan.textContent = '(0)';
         return;
     }
@@ -229,7 +238,7 @@ function renderStack() {
     sizeSpan.textContent = `(${state.stack.length})`;
 
     if (state.stack.length === 0) {
-        container.innerHTML = '<div style="color: #6c757d;">Stack empty</div>';
+        container.innerHTML = '<div style="color: #666;">Stack empty</div>';
         return;
     }
 
@@ -244,29 +253,25 @@ function renderStack() {
 
     if (state.stack.length > 20) {
         const more = document.createElement('div');
-        more.style.color = '#6c757d';
+        more.style.color = '#666';
         more.style.padding = '4px';
         more.textContent = `... and ${state.stack.length - 20} more`;
         container.appendChild(more);
     }
 }
 
-function setStatus(message, isError = false) {
-    const statusEl = document.getElementById('status-message');
-    statusEl.textContent = message;
-    statusEl.style.color = isError ? '#dc3545' : '#6c757d';
+function setStatus(message) {
+    console.log(message);
 }
 
 async function runProgram() {
     if (!gameEngine.levelData) {
-        setStatus('No level loaded', true);
+        alert('No level loaded');
         return;
     }
 
     gameEngine.reset();
     gameEngine.loadProgram(currentProgram);
-
-    setStatus('Running program...');
 
     await gameEngine.run();
 
@@ -274,15 +279,15 @@ async function runProgram() {
 
     const state = gameEngine.getState();
     if (state.status === 'won') {
-        setStatus(`Victory! Solved in ${state.steps} steps`);
+        alert(`Victory! Solved in ${state.steps} steps`);
     } else {
-        setStatus(state.message || 'Program failed', true);
+        alert(state.message || 'Program failed');
     }
 }
 
 function stepProgram() {
     if (!gameEngine.levelData) {
-        setStatus('No level loaded', true);
+        alert('No level loaded');
         return;
     }
 
@@ -296,36 +301,35 @@ function stepProgram() {
     renderUI();
 
     const state = gameEngine.getState();
-    setStatus(state.message || 'Step executed');
 
     if (!canContinue) {
         if (state.status === 'won') {
-            setStatus(`Victory! Solved in ${state.steps} steps`);
+            alert(`Victory! Solved in ${state.steps} steps`);
         } else {
-            setStatus(state.message || 'Program ended', true);
+            alert(state.message || 'Program ended');
         }
     }
 }
 
 function resetGame() {
     if (!gameEngine.levelData) {
-        setStatus('No level loaded', true);
+        alert('No level loaded');
         return;
     }
 
     gameEngine.reset();
     renderUI();
-    setStatus('Game reset');
 }
 
 async function autoSolve() {
     if (!gameEngine.levelData) {
-        setStatus('No level loaded', true);
+        alert('No level loaded');
         return;
     }
 
-    const resultDiv = document.getElementById('solver-result');
-    resultDiv.innerHTML = '<div>Searching for solution...</div>';
+    const output = document.getElementById('solver-output');
+    output.classList.add('show');
+    output.innerHTML = '<div>Searching for solution...</div>';
 
     solver.stop();
 
@@ -334,14 +338,15 @@ async function autoSolve() {
             gameEngine.levelData,
             30000,
             (tested, depth) => {
-                resultDiv.innerHTML = `<div>Searching depth ${depth}... (tested ${tested.toLocaleString()} programs)</div>`;
+                output.innerHTML = `<div>Depth ${depth}... (${tested.toLocaleString()} programs)</div>`;
             }
         );
 
         if (result.solved) {
             currentProgram = result.program;
 
-            let html = `<div class="solver-success">✓ Solution found! (${result.steps} steps, tested ${result.tested.toLocaleString()} programs)</div><br>`;
+            let html = `<div style="color: #28a745;">✓ Solution found!</div>`;
+            html += `<div>${result.steps} steps, tested ${result.tested.toLocaleString()} programs</div><br>`;
 
             result.program.forEach((func, i) => {
                 if (func.length > 0) {
@@ -350,21 +355,18 @@ async function autoSolve() {
                 }
             });
 
-            resultDiv.innerHTML = html;
+            output.innerHTML = html;
 
             renderProgramEditor();
-            setStatus('Solution found! Click Run to execute');
         } else {
             let reason = 'No solution found';
             if (result.cancelled) reason = 'Search cancelled';
             if (result.timeout) reason = 'Search timeout';
 
-            resultDiv.innerHTML = `<div class="solver-error">✗ ${reason}</div><div>Tested ${result.tested.toLocaleString()} programs</div>`;
-            setStatus(reason, true);
+            output.innerHTML = `<div style="color: #dc3545;">✗ ${reason}</div><div>Tested ${result.tested.toLocaleString()} programs</div>`;
         }
     } catch (error) {
-        resultDiv.innerHTML = `<div class="solver-error">Error: ${error.message}</div>`;
-        setStatus(`Solver error: ${error.message}`, true);
+        output.innerHTML = `<div style="color: #dc3545;">Error: ${error.message}</div>`;
     }
 }
 

@@ -180,6 +180,100 @@ function renderGameInfo() {
 let pendingConditional = null;
 let selectedFunctionIndex = 0;
 
+// Generate SVG icon for instruction
+function createInstructionIcon(instrName, size = 16) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', size);
+    svg.setAttribute('height', size);
+    svg.setAttribute('viewBox', '0 0 16 16');
+    svg.style.display = 'inline-block';
+    svg.style.verticalAlign = 'middle';
+    svg.style.marginRight = '4px';
+
+    const createPath = (d, fill = 'currentColor', stroke = null) => {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', d);
+        path.setAttribute('fill', fill);
+        if (stroke) {
+            path.setAttribute('stroke', stroke);
+            path.setAttribute('stroke-width', '1');
+        }
+        return path;
+    };
+
+    const createCircle = (cx, cy, r, fill = 'currentColor') => {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', cx);
+        circle.setAttribute('cy', cy);
+        circle.setAttribute('r', r);
+        circle.setAttribute('fill', fill);
+        return circle;
+    };
+
+    switch (instrName) {
+        case 'FW': // Forward arrow
+            svg.appendChild(createPath('M12 8 L8 5 L8 7 L4 7 L4 9 L8 9 L8 11 Z'));
+            break;
+
+        case 'TL': // Turn left (curved arrow counter-clockwise)
+            svg.appendChild(createPath('M8 3 L8 6 L5 6 L8 9 L11 6 L8 6 L8 3 M8 6 Q4 6 4 10', 'none', 'currentColor'));
+            svg.appendChild(createPath('M3 10 L4 12 L5 10 Z'));
+            break;
+
+        case 'TR': // Turn right (curved arrow clockwise)
+            svg.appendChild(createPath('M8 3 L8 6 L11 6 L8 9 L5 6 L8 6 L8 3 M8 6 Q12 6 12 10', 'none', 'currentColor'));
+            svg.appendChild(createPath('M13 10 L12 12 L11 10 Z'));
+            break;
+
+        case 'P1': // Paint color 1 (purple circle)
+            svg.appendChild(createCircle(8, 8, 5, '#6F3DE7'));
+            svg.appendChild(createPath('M8 4 L6 6 L7 6 L7 10 Q7 11 8 11 Q9 11 9 10 L9 7 L10 7 Z', '#fff'));
+            break;
+
+        case 'P2': // Paint color 2 (teal circle)
+            svg.appendChild(createCircle(8, 8, 5, '#59B6B2'));
+            svg.appendChild(createPath('M8 4 L6 6 L7 6 L7 10 Q7 11 8 11 Q9 11 9 10 L9 7 L10 7 Z', '#fff'));
+            break;
+
+        case 'P3': // Paint color 3 (yellow circle)
+            svg.appendChild(createCircle(8, 8, 5, '#FFB33C'));
+            svg.appendChild(createPath('M8 4 L6 6 L7 6 L7 10 Q7 11 8 11 Q9 11 9 10 L9 7 L10 7 Z', '#fff'));
+            break;
+
+        case 'F0': // Function 0
+        case 'F1': // Function 1
+        case 'F2': // Function 2
+            svg.appendChild(createPath('M4 3 L4 13 L12 13 L12 3 Z', 'none', 'currentColor'));
+            svg.appendChild(createPath('M6 6 L10 6 M6 8 L10 8 M6 10 L10 10', 'none', 'currentColor'));
+            break;
+
+        case 'C1': // Conditional color 1
+            svg.appendChild(createPath('M8 2 L14 8 L8 14 L2 8 Z', '#6F3DE7'));
+            svg.appendChild(createPath('M8 6 L8 9 M8 11 L8 11.5', 'none', '#fff'));
+            break;
+
+        case 'C2': // Conditional color 2
+            svg.appendChild(createPath('M8 2 L14 8 L8 14 L2 8 Z', '#59B6B2'));
+            svg.appendChild(createPath('M8 6 L8 9 M8 11 L8 11.5', 'none', '#fff'));
+            break;
+
+        case 'C3': // Conditional color 3
+            svg.appendChild(createPath('M8 2 L14 8 L8 14 L2 8 Z', '#FFB33C'));
+            svg.appendChild(createPath('M8 6 L8 9 M8 11 L8 11.5', 'none', '#fff'));
+            break;
+
+        case 'NO': // No operation
+            svg.appendChild(createCircle(8, 8, 6, 'none'));
+            svg.appendChild(createPath('M5 5 L11 11 M11 5 L5 11', 'none', 'currentColor'));
+            break;
+
+        default:
+            svg.appendChild(createCircle(8, 8, 4));
+    }
+
+    return svg;
+}
+
 function renderInstructionsPalette() {
     const container = document.getElementById('palette-instructions');
     container.innerHTML = '';
@@ -209,14 +303,23 @@ function renderInstructionsPalette() {
         conditionals.forEach(cond => {
             const chip = document.createElement('div');
             chip.className = 'instruction-chip conditional';
-            chip.textContent = cond;
             chip.style.cursor = 'pointer';
+            chip.style.display = 'flex';
+            chip.style.alignItems = 'center';
+            chip.style.gap = '4px';
+
+            // Add icon
+            chip.appendChild(createInstructionIcon(cond, 16));
+
+            // Add text
+            const text = document.createElement('span');
+            text.textContent = pendingConditional === cond ? cond + ' ✓' : cond;
+            chip.appendChild(text);
 
             if (pendingConditional === cond) {
                 chip.style.background = '#ffc959';
                 chip.style.color = '#1a191c';
                 chip.style.fontWeight = 'bold';
-                chip.textContent = cond + ' ✓';
             }
 
             chip.addEventListener('click', () => {
@@ -249,8 +352,27 @@ function renderInstructionsPalette() {
         opcodes.forEach(opcode => {
             const chip = document.createElement('div');
             chip.className = 'instruction-chip';
-            chip.textContent = pendingConditional ? `${pendingConditional}+${opcode}` : opcode;
             chip.style.cursor = 'pointer';
+            chip.style.display = 'flex';
+            chip.style.alignItems = 'center';
+            chip.style.gap = '4px';
+
+            // Add conditional icon if pending
+            if (pendingConditional) {
+                chip.appendChild(createInstructionIcon(pendingConditional, 16));
+                const plus = document.createElement('span');
+                plus.textContent = '+';
+                plus.style.margin = '0 2px';
+                chip.appendChild(plus);
+            }
+
+            // Add opcode icon
+            chip.appendChild(createInstructionIcon(opcode, 16));
+
+            // Add text
+            const text = document.createElement('span');
+            text.textContent = pendingConditional ? `${pendingConditional}+${opcode}` : opcode;
+            chip.appendChild(text);
 
             if (pendingConditional) {
                 chip.style.background = '#4a3d20';
@@ -398,10 +520,33 @@ function renderProgramEditor() {
             slot.className = 'instruction-slot';
 
             if (i < program.length) {
-                // Filled slot
-                slot.textContent = gameEngine.instructionToString(program[i]);
+                // Filled slot with icon
+                const instrString = gameEngine.instructionToString(program[i]);
                 slot.style.cursor = 'pointer';
                 slot.title = 'Click to remove';
+                slot.style.display = 'flex';
+                slot.style.alignItems = 'center';
+                slot.style.gap = '4px';
+                slot.style.justifyContent = 'center';
+
+                // Parse instruction string (e.g., "C1+FW" or "FW")
+                if (instrString.includes('+')) {
+                    const [cond, opcode] = instrString.split('+');
+                    slot.appendChild(createInstructionIcon(cond, 14));
+                    const plus = document.createElement('span');
+                    plus.textContent = '+';
+                    plus.style.fontSize = '10px';
+                    slot.appendChild(plus);
+                    slot.appendChild(createInstructionIcon(opcode, 14));
+                } else {
+                    slot.appendChild(createInstructionIcon(instrString, 14));
+                }
+
+                const text = document.createElement('span');
+                text.textContent = instrString;
+                text.style.fontSize = '11px';
+                slot.appendChild(text);
+
                 slot.addEventListener('click', () => removeInstructionFromProgram(index, i));
             } else {
                 // Empty slot

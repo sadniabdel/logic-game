@@ -17,25 +17,31 @@ class Solver {
             if (COND[name] !== undefined) conds.push(COND[name]);
         }
 
-        const instructionSet = [];
+        const unconditional = [];
+        const conditional = [];
 
-        // Unconditional opcodes
+        // Unconditional opcodes (try these first - simpler)
         for (const op of opcodes) {
-            instructionSet.push(op);
+            unconditional.push(op);
         }
 
-        // Conditional opcodes
+        // Conditional opcodes (try these later - more complex)
         for (const cond of conds) {
             for (const op of opcodes) {
-                instructionSet.push(cond * 100 + op);
+                conditional.push(cond * 100 + op);
             }
         }
 
-        return instructionSet;
+        return { unconditional, conditional, all: [...unconditional, ...conditional] };
     }
 
-    * generatePrograms(instructionSet, functionLengths, maxTotalInstructions) {
+    * generatePrograms(instructionSet, functionLengths, maxTotalInstructions, tryConditionalsFirst = false) {
         const numFuncs = functionLengths.length;
+
+        // Determine instruction priority order
+        const instrOrder = tryConditionalsFirst ?
+            [...instructionSet.conditional, ...instructionSet.unconditional] :
+            [...instructionSet.unconditional, ...instructionSet.conditional];
 
         function* genFunc(funcIndex, totalUsed) {
             if (funcIndex === numFuncs) {
@@ -58,7 +64,7 @@ class Solver {
                         return;
                     }
 
-                    for (const instr of instructionSet) {
+                    for (const instr of instrOrder) {
                         yield* genInstructions(currentLen - 1, [...seq, instr]);
                     }
                 }
@@ -193,13 +199,22 @@ class Solver {
         const instructionSet = this.buildInstructionSet(availableInstructions);
         let tested = 0;
 
-        // Iterative deepening
-        for (let maxTotal = 1; maxTotal <= 10; maxTotal++) {
-            if (!this.running) {
-                return { solved: false, tested, cancelled: true };
+        // Two-phase approach: try unconditional first, then conditionals
+        const phases = [
+            { name: 'unconditional', tryConditionalsFirst: false },
+            { name: 'with conditionals', tryConditionalsFirst: true }
+        ];
+
+        for (const phase of phases) {
+            // Skip conditional phase if no conditionals available
+            if (phase.name === 'with conditionals' && instructionSet.conditional.length === 0) {
+                continue;
             }
 
-            for (const program of this.generatePrograms(instructionSet, functionLengths, maxTotal)) {
+            // Iterative deepening with lower max for efficiency
+            const maxDepth = instructionSet.unconditional.length <= 3 ? 8 : 10;
+
+            for (let maxTotal = 1; maxTotal <= maxDepth; maxTotal++) {
                 if (!this.running) {
                     return { solved: false, tested, cancelled: true };
                 }
@@ -208,18 +223,34 @@ class Solver {
                     return { solved: false, tested, timeout: true };
                 }
 
-                const result = this.executeProgram(levelData, program);
-                tested++;
+                for (const program of this.generatePrograms(instructionSet, functionLengths, maxTotal, phase.tryConditionalsFirst)) {
+                    if (!this.running) {
+                        return { solved: false, tested, cancelled: true };
+                    }
 
-                if (tested % 10000 === 0 && onProgress) {
-                    onProgress(tested, maxTotal);
-                    // Allow UI to update
-                    await new Promise(resolve => setTimeout(resolve, 0));
-                }
+                    if (Date.now() - startTime > timeoutMs) {
+                        return { solved: false, tested, timeout: true };
+                    }
 
-                if (result.solved) {
-                    return { solved: true, program, steps: result.steps, tested };
+                    const result = this.executeProgram(levelData, program);
+                    tested++;
+
+                    if (tested % 5000 === 0 && onProgress) {
+                        onProgress(tested, maxTotal);
+                        // Allow UI to update
+                        await new Promise(resolve => setTimeout(resolve, 0));
+                    }
+
+                    if (result.solved) {
+                        return { solved: true, program, steps: result.steps, tested };
+                    }
                 }
+            }
+
+            // If unconditional phase didn't find solution, try conditionals
+            if (phase.name === 'unconditional' && onProgress) {
+                onProgress(tested, 'trying conditionals...');
+                await new Promise(resolve => setTimeout(resolve, 0));
             }
         }
 

@@ -2,13 +2,26 @@
 
 A standalone version of the ZZLE logic puzzle game with built-in level selector and auto-solver.
 
+## 🎮 Play the Game
+
+**NEW:** Complete standalone game implementation in `standalone-game/` folder!
+
+- Modern, clean interface
+- Correct game mechanics following exact rules
+- Visual board with execution stack
+- Program editor for all functions (F0, F1, F2)
+- Built-in auto-solver with progress tracking
+- No dependencies - just open `standalone-game/index.html` in your browser!
+
+See `standalone-game/README.md` for full documentation.
+
 ## Features
 
 - **116 Challenging Levels** - Navigate a robot through grid-based puzzles
 - **Level Selector** - Jump to any level instantly
-- **Auto-Solver** - Get solutions using BFS pathfinding algorithm
+- **Auto-Solver** - Program synthesis solver for complex puzzles
 - **No Authentication** - Play without login or tracking
-- **Same Design & CSS** - Identical look and feel to the original
+- **Correct Game Rules** - Stack-based execution, all instruction types supported
 
 ## How to Play
 

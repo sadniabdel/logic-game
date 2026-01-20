@@ -1,0 +1,49 @@
+🎮 ZZLE Pattern-Based Solver
+
+========================================
+✅ Level 1: Solved in 9 steps (tested 6 programs)
+   Solution: FW, F0
+❌ Level 2: No solution found
+❌ Level 3: No solution found
+❌ Level 4: No solution found
+✅ Level 5: Solved in 41 steps (tested 24480 programs)
+   Solution: FW, TL, FW, TR, F0
+✅ Level 6: Solved in 41 steps (tested 24480 programs)
+   Solution: FW, TL, FW, TR, F0
+✅ Level 7: Solved in 38 steps (tested 24480 programs)
+   Solution: FW, TL, FW, TR, F0
+✅ Level 8: Solved in 41 steps (tested 24480 programs)
+   Solution: FW, TL, FW, TR, F0
+   [Tested 123450 programs]
+❌ Level 9: No solution found
+   [Tested 123450 programs]
+❌ Level 10: No solution found
+   [Tested 123450 programs]
+❌ Level 11: No solution found
+   [Tested 123450 programs]
+❌ Level 12: No solution found
+   [Timeout after testing 164185 programs]
+❌ Level 13: No solution found
+   [Timeout after testing 164352 programs]
+❌ Level 14: No solution found
+   [Timeout after testing 164134 programs]
+❌ Level 15: No solution found
+   [Timeout after testing 164352 programs]
+❌ Level 16: No solution found
+/home/user/logic-game/generate-solutions-pattern.js:54
+            if (frame.pc >= functions[frame.funcIndex].length) {
+                                                       ^
+
+TypeError: Cannot read properties of undefined (reading 'length')
+    at executeProgram (/home/user/logic-game/generate-solutions-pattern.js:54:56)
+    at solveLevel (/home/user/logic-game/generate-solutions-pattern.js:190:28)
+    at main (/home/user/logic-game/generate-solutions-pattern.js:227:24)
+    at Object.<anonymous> (/home/user/logic-game/generate-solutions-pattern.js:289:1)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+
+Node.js v22.21.1

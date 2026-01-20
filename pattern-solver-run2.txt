@@ -1,0 +1,218 @@
+🎮 ZZLE Pattern-Based Solver
+
+========================================
+✅ Level 1: Solved in 9 steps (tested 6 programs)
+   Solution: FW, F0
+❌ Level 2: No solution found
+❌ Level 3: No solution found
+❌ Level 4: No solution found
+✅ Level 5: Solved in 41 steps (tested 24480 programs)
+   Solution: FW, TL, FW, TR, F0
+✅ Level 6: Solved in 41 steps (tested 24480 programs)
+   Solution: FW, TL, FW, TR, F0
+✅ Level 7: Solved in 38 steps (tested 24480 programs)
+   Solution: FW, TL, FW, TR, F0
+✅ Level 8: Solved in 41 steps (tested 24480 programs)
+   Solution: FW, TL, FW, TR, F0
+   [Timeout after testing 120915 programs]
+❌ Level 9: No solution found
+   [Timeout after testing 121829 programs]
+❌ Level 10: No solution found
+   [Timeout after testing 121655 programs]
+❌ Level 11: No solution found
+   [Timeout after testing 121451 programs]
+❌ Level 12: No solution found
+   [Timeout after testing 121537 programs]
+❌ Level 13: No solution found
+   [Timeout after testing 121522 programs]
+❌ Level 14: No solution found
+   [Timeout after testing 121321 programs]
+❌ Level 15: No solution found
+   [Timeout after testing 120856 programs]
+❌ Level 16: No solution found
+   [Tested 1606 programs]
+❌ Level 17: No solution found
+   [Tested 17710 programs]
+❌ Level 18: No solution found
+   [Tested 1606 programs]
+❌ Level 19: No solution found
+   [Tested 17710 programs]
+❌ Level 20: No solution found
+   [Tested 1606 programs]
+❌ Level 21: No solution found
+   [Tested 1606 programs]
+❌ Level 22: No solution found
+   [Tested 1606 programs]
+❌ Level 23: No solution found
+   [Tested 1606 programs]
+❌ Level 24: No solution found
+   [Tested 12340 programs]
+❌ Level 25: No solution found
+   [Tested 12340 programs]
+❌ Level 26: No solution found
+   [Timeout after testing 120622 programs]
+❌ Level 27: No solution found
+   [Timeout after testing 120698 programs]
+❌ Level 28: No solution found
+   [Tested 12340 programs]
+❌ Level 29: No solution found
+   [Tested 12340 programs]
+❌ Level 30: No solution found
+✅ Level 31: Solved in 204 steps (tested 2860 programs)
+   Solution: FW, C3, TL, F0
+   [Timeout after testing 120169 programs]
+❌ Level 32: No solution found
+   [Timeout after testing 121036 programs]
+❌ Level 33: No solution found
+✅ Level 34: Solved in 210 steps (tested 27620 programs)
+   Solution: FW, C2, TL, P1, F0
+   [Tested 12340 programs]
+❌ Level 35: No solution found
+   [Timeout after testing 120934 programs]
+❌ Level 36: No solution found
+   [Timeout after testing 120854 programs]
+❌ Level 37: No solution found
+   [Timeout after testing 120597 programs]
+❌ Level 38: No solution found
+   [Timeout after testing 120365 programs]
+❌ Level 39: No solution found
+   [Timeout after testing 120341 programs]
+❌ Level 40: No solution found
+   [Tested 17710 programs]
+❌ Level 41: No solution found
+   [Tested 143 programs]
+❌ Level 42: No solution found
+   [Tested 24672 programs]
+❌ Level 43: No solution found
+   [Tested 17710 programs]
+❌ Level 44: No solution found
+   [Tested 1606 programs]
+❌ Level 45: No solution found
+   [Tested 17710 programs]
+❌ Level 46: No solution found
+   [Timeout after testing 119820 programs]
+❌ Level 47: No solution found
+   [Tested 24672 programs]
+❌ Level 48: No solution found
+   [Timeout after testing 162715 programs]
+❌ Level 49: No solution found
+   [Timeout after testing 120516 programs]
+❌ Level 50: No solution found
+   [Timeout after testing 120559 programs]
+❌ Level 51: No solution found
+   [Tested 1606 programs]
+❌ Level 52: No solution found
+   [Timeout after testing 160020 programs]
+❌ Level 53: No solution found
+   [Tested 17710 programs]
+❌ Level 54: No solution found
+   [Timeout after testing 163820 programs]
+❌ Level 55: No solution found
+   [Timeout after testing 165241 programs]
+❌ Level 56: No solution found
+   [Timeout after testing 121009 programs]
+❌ Level 57: No solution found
+   [Tested 17710 programs]
+❌ Level 58: No solution found
+   [Tested 17710 programs]
+❌ Level 59: No solution found
+   [Timeout after testing 121167 programs]
+❌ Level 60: No solution found
+   [Tested 1606 programs]
+❌ Level 61: No solution found
+   [Tested 17710 programs]
+❌ Level 62: No solution found
+   [Timeout after testing 163851 programs]
+❌ Level 63: No solution found
+   [Timeout after testing 120789 programs]
+❌ Level 64: No solution found
+   [Tested 12340 programs]
+❌ Level 65: No solution found
+   [Timeout after testing 158771 programs]
+❌ Level 66: No solution found
+   [Timeout after testing 163838 programs]
+❌ Level 67: No solution found
+   [Tested 2052 programs]
+❌ Level 68: No solution found
+   [Timeout after testing 120877 programs]
+❌ Level 69: No solution found
+   [Timeout after testing 183410 programs]
+❌ Level 70: No solution found
+   [Timeout after testing 161378 programs]
+❌ Level 71: No solution found
+   [Tested 1606 programs]
+❌ Level 72: No solution found
+   [Tested 1606 programs]
+❌ Level 73: No solution found
+   [Timeout after testing 120853 programs]
+❌ Level 74: No solution found
+   [Timeout after testing 164963 programs]
+❌ Level 75: No solution found
+   [Tested 143 programs]
+❌ Level 76: No solution found
+   [Tested 24672 programs]
+❌ Level 77: No solution found
+   [Tested 24672 programs]
+❌ Level 78: No solution found
+   [Timeout after testing 120651 programs]
+❌ Level 79: No solution found
+   [Timeout after testing 163660 programs]
+❌ Level 80: No solution found
+   [Tested 143 programs]
+❌ Level 81: No solution found
+   [Timeout after testing 120797 programs]
+❌ Level 82: No solution found
+   [Timeout after testing 163184 programs]
+❌ Level 83: No solution found
+   [Tested 168 programs]
+❌ Level 84: No solution found
+   [Timeout after testing 120730 programs]
+❌ Level 85: No solution found
+   [Tested 17710 programs]
+❌ Level 86: No solution found
+   [Tested 2052 programs]
+❌ Level 87: No solution found
+   [Tested 2052 programs]
+❌ Level 88: No solution found
+   [Tested 1606 programs]
+❌ Level 89: No solution found
+   [Timeout after testing 163892 programs]
+❌ Level 90: No solution found
+   [Timeout after testing 163795 programs]
+❌ Level 91: No solution found
+   [Timeout after testing 164059 programs]
+❌ Level 92: No solution found
+   [Timeout after testing 176537 programs]
+❌ Level 93: No solution found
+   [Timeout after testing 163715 programs]
+❌ Level 94: No solution found
+   [Timeout after testing 183477 programs]
+❌ Level 95: No solution found
+   [Timeout after testing 120663 programs]
+❌ Level 96: No solution found
+   [Timeout after testing 120655 programs]
+❌ Level 97: No solution found
+   [Timeout after testing 121007 programs]
+❌ Level 98: No solution found
+   [Timeout after testing 183051 programs]
+❌ Level 99: No solution found
+   [Tested 24672 programs]
+❌ Level 100: No solution found
+   [Timeout after testing 179134 programs]
+❌ Level 101: No solution found
+   [Tested 24672 programs]
+❌ Level 102: No solution found
+   [Tested 24672 programs]
+❌ Level 103: No solution found
+   [Tested 24672 programs]
+❌ Level 104: No solution found
+   [Timeout after testing 171353 programs]
+❌ Level 105: No solution found
+   [Timeout after testing 120276 programs]
+❌ Level 106: No solution found
+   [Timeout after testing 186367 programs]
+❌ Level 107: No solution found
+   [Tested 2052 programs]
+❌ Level 108: No solution found
+   [Timeout after testing 185127 programs]
+❌ Level 109: No solution found

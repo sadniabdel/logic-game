@@ -1,0 +1,71 @@
+🎮 ZZLE Solver (Corrected Conditional Logic)
+
+========================================
+✅ Level 1: Solved in 9 steps (tested 4 programs)
+   Solution: FW, F0
+❌ Level 2: No solution found (tested 0 programs)
+❌ Level 3: No solution found (tested 0 programs)
+❌ Level 4: No solution found (tested 0 programs)
+✅ Level 5: Solved in 41 steps (tested 422582 programs)
+   Solution: FW, TL, FW, TR, F0
+✅ Level 6: Solved in 41 steps (tested 422582 programs)
+   Solution: FW, TL, FW, TR, F0
+✅ Level 7: Solved in 38 steps (tested 422582 programs)
+   Solution: FW, TL, FW, TR, F0
+✅ Level 8: Solved in 41 steps (tested 422582 programs)
+   Solution: FW, TL, FW, TR, F0
+✅ Level 9: Solved in 53 steps (tested 536332 programs)
+   Solution: FW, C1+TL, C1+FW, TR, F0
+✅ Level 10: Solved in 53 steps (tested 551932 programs)
+   Solution: FW, C1+TR, C1+FW, TL, F0
+✅ Level 11: Solved in 63 steps (tested 649432 programs)
+   Solution: FW, C2+TR, C2+FW, TL, F0
+✅ Level 12: Solved in 53 steps (tested 746932 programs)
+   Solution: FW, C3+TR, C3+FW, TL, F0
+❌ Level 13: No solution found (tested 854552 programs)
+❌ Level 14: No solution found (tested 859554 programs)
+❌ Level 15: No solution found (tested 850193 programs)
+❌ Level 16: No solution found (tested 839882 programs)
+❌ Level 17: No solution found (tested 18278 programs)
+❌ Level 18: No solution found (tested 453343 programs)
+❌ Level 19: No solution found (tested 18278 programs)
+❌ Level 20: No solution found (tested 456504 programs)
+❌ Level 21: No solution found (tested 18278 programs)
+❌ Level 22: No solution found (tested 18278 programs)
+❌ Level 23: No solution found (tested 18278 programs)
+❌ Level 24: No solution found (tested 18278 programs)
+✅ Level 25: Solved in 61 steps (tested 22007 programs)
+   Solution: FW, C1+TR, P2, F0
+✅ Level 26: Solved in 61 steps (tested 25107 programs)
+   Solution: FW, C2+TL, P1, F0
+❌ Level 27: No solution found (tested 842857 programs)
+❌ Level 28: No solution found (tested 832942 programs)
+✅ Level 29: Solved in 153 steps (tested 28657 programs)
+   Solution: FW, C3+FW, C3+TL, F0
+✅ Level 30: Solved in 649 steps (tested 22257 programs)
+   Solution: FW, C1+TR, C2+TL, F0
+✅ Level 31: Solved in 166 steps (tested 1157 programs)
+   Solution: FW, C3+TL, F0
+✅ Level 32: Solved in 271 steps (tested 432407 programs)
+   Solution: FW, TL, C2+TR, C3+TL, F0
+✅ Level 33: Solved in 231 steps (tested 634482 programs)
+   Solution: FW, C2+TL, C2+TL, P1, F0
+✅ Level 34: Solved in 197 steps (tested 25107 programs)
+   Solution: FW, C2+TL, P1, F0
+✅ Level 35: Solved in 1017 steps (tested 17407 programs)
+   Solution: FW, TL, C3+TL, F0
+✅ Level 36: Solved in 1056 steps (tested 432407 programs)
+   Solution: FW, TL, C2+TR, C3+TL, F0
+❌ Level 37: No solution found (tested 833011 programs)
+❌ Level 38: No solution found (tested 842676 programs)
+❌ Level 39: No solution found (tested 846432 programs)
+❌ Level 40: No solution found (tested 834232 programs)
+❌ Level 41: No solution found (tested 444198 programs)
+❌ Level 42: No solution found (tested 702 programs)
+❌ Level 43: No solution found (tested 438765 programs)
+❌ Level 44: No solution found (tested 444615 programs)
+❌ Level 45: No solution found (tested 18278 programs)
+❌ Level 46: No solution found (tested 445127 programs)
+❌ Level 47: No solution found (tested 842071 programs)
+❌ Level 48: No solution found (tested 438227 programs)
+❌ Level 49: No solution found (tested 434930 programs)

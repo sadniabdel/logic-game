@@ -3,6 +3,7 @@
 let gameEngine;
 let solver;
 let smartSolver;
+let constraintSolver;
 let currentProgram = [];
 
 // Initialize on page load
@@ -10,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     gameEngine = new GameEngine();
     solver = new Solver();
     smartSolver = new SmartSolver();
+    constraintSolver = new ConstraintSolver();
 
     initializeLevelSelector();
     setupEventListeners();
@@ -671,12 +673,12 @@ async function autoSolve() {
 
     const output = document.getElementById('solver-output');
     output.classList.add('show');
-    output.innerHTML = '<div>🧠 Smart beam search solving...</div>';
+    output.innerHTML = '<div>⚡ Constraint-based solving (Zolver algorithm)...</div>';
 
-    smartSolver.stop();
+    constraintSolver.stop();
 
     try {
-        const result = await smartSolver.solve(
+        const result = await constraintSolver.solve(
             gameEngine.levelData,
             30000,
             (tested, depth) => {
@@ -692,7 +694,7 @@ async function autoSolve() {
 
             result.program.forEach((func, i) => {
                 if (func.length > 0) {
-                    const funcStr = func.map(instr => smartSolver.instructionToString(instr)).join(', ');
+                    const funcStr = func.map(instr => constraintSolver.instructionToString(instr)).join(', ');
                     html += `<div><strong>F${i}:</strong> [${funcStr}]</div>`;
                 }
             });

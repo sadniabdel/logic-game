@@ -78,9 +78,17 @@ function renderBoard() {
 
     const cellSize = 32;
 
-    // Clear canvas
-    ctx.fillStyle = '#1a191c';
+    // Clear canvas - original game background
+    ctx.fillStyle = '#293742';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Original game colors
+    const colors = {
+        0: '#222',        // Void/empty (darker)
+        1: '#6F3DE7',     // Color 1 - Purple (exact original)
+        2: '#59B6B2',     // Color 2 - Teal (exact original)
+        3: '#FFB33C'      // Color 3 - Yellow (exact original)
+    };
 
     // Draw grid
     for (let y = 0; y < 16; y++) {
@@ -93,47 +101,67 @@ function renderBoard() {
             const py = y * cellSize;
 
             // Draw tile
-            if (tileValue === 0) {
-                ctx.fillStyle = '#0a090c';
-            } else {
-                const colors = ['#2a2930', '#4a2929', '#294a29', '#29294a'];
-                ctx.fillStyle = colors[color];
-            }
-
+            ctx.fillStyle = colors[color];
             ctx.fillRect(px, py, cellSize, cellSize);
 
             // Draw star
             if (hasStar) {
-                ctx.fillStyle = '#ffc959';
-                ctx.font = 'bold 20px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('★', px + cellSize / 2, py + cellSize / 2);
+                ctx.fillStyle = 'white';
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 1.5;
+
+                // Draw star shape (5-pointed star)
+                ctx.save();
+                ctx.translate(px + cellSize / 2, py + cellSize / 2);
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+                    const radius = i % 2 === 0 ? 8 : 4;
+                    const sx = radius * Math.cos(angle);
+                    const sy = radius * Math.sin(angle);
+                    if (i === 0) ctx.moveTo(sx, sy);
+                    else ctx.lineTo(sx, sy);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
             }
 
-            // Draw grid lines
-            ctx.strokeStyle = '#3a3940';
+            // Draw grid lines (subtle)
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
             ctx.lineWidth = 1;
             ctx.strokeRect(px, py, cellSize, cellSize);
         }
     }
 
-    // Draw player
-    const px = state.x * cellSize;
-    const py = state.y * cellSize;
+    // Draw player - diamond/rhombus shape like original
+    const px = state.x * cellSize + cellSize / 2;
+    const py = state.y * cellSize + cellSize / 2;
+    const size = cellSize * 0.4;
 
-    ctx.fillStyle = '#5562EB';
+    ctx.save();
+    ctx.translate(px, py);
+
+    // Rotate based on direction: 0=left, 1=up, 2=right, 3=down
+    const rotations = [180, 270, 0, 90]; // Degrees
+    ctx.rotate((rotations[state.dir] * Math.PI) / 180);
+
+    // Draw diamond/rhombus
     ctx.beginPath();
-    ctx.arc(px + cellSize / 2, py + cellSize / 2, cellSize / 3, 0, 2 * Math.PI);
-    ctx.fill();
+    ctx.moveTo(size, 0);           // Right point
+    ctx.lineTo(0, -size * 0.7);    // Top point
+    ctx.lineTo(-size, 0);          // Left point
+    ctx.lineTo(0, size * 0.7);     // Bottom point
+    ctx.closePath();
 
-    // Draw direction arrow
     ctx.fillStyle = 'white';
-    ctx.font = 'bold 16px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    const arrows = ['←', '↑', '→', '↓'];
-    ctx.fillText(arrows[state.dir], px + cellSize / 2, py + cellSize / 2);
+    ctx.fill();
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.restore();
 }
 
 function renderGameInfo() {
@@ -148,6 +176,10 @@ function renderGameInfo() {
     document.getElementById('direction').textContent = dirNames[state.dir];
 }
 
+// Global variable to track pending conditional
+let pendingConditional = null;
+let selectedFunctionIndex = 0;
+
 function renderInstructionsPalette() {
     const container = document.getElementById('palette-instructions');
     container.innerHTML = '';
@@ -156,32 +188,94 @@ function renderInstructionsPalette() {
 
     const activeInstructions = gameEngine.levelData.activeInstructions || [];
 
-    activeInstructions.forEach(instr => {
-        const chip = document.createElement('div');
-        chip.className = 'instruction-chip';
-        chip.textContent = instr;
+    // Separate conditionals and opcodes
+    const conditionals = activeInstructions.filter(i => i.startsWith('C'));
+    const opcodes = activeInstructions.filter(i => !i.startsWith('C'));
 
-        if (instr.startsWith('C')) {
-            chip.classList.add('conditional');
-        }
+    // Show conditionals section if any
+    if (conditionals.length > 0) {
+        const condLabel = document.createElement('div');
+        condLabel.style.color = '#ffc959';
+        condLabel.style.fontSize = '12px';
+        condLabel.style.marginBottom = '8px';
+        condLabel.textContent = 'Conditionals (click first, then opcode):';
+        container.appendChild(condLabel);
 
-        // Make clickable - adds to currently selected function (F0 by default)
-        chip.addEventListener('click', () => {
-            addInstructionToProgram(instr, selectedFunctionIndex);
+        const condDiv = document.createElement('div');
+        condDiv.style.display = 'flex';
+        condDiv.style.gap = '8px';
+        condDiv.style.marginBottom = '15px';
+
+        conditionals.forEach(cond => {
+            const chip = document.createElement('div');
+            chip.className = 'instruction-chip conditional';
+            chip.textContent = cond;
+            chip.style.cursor = 'pointer';
+
+            if (pendingConditional === cond) {
+                chip.style.background = '#ffc959';
+                chip.style.color = '#1a191c';
+                chip.style.fontWeight = 'bold';
+                chip.textContent = cond + ' ✓';
+            }
+
+            chip.addEventListener('click', () => {
+                pendingConditional = pendingConditional === cond ? null : cond;
+                renderInstructionsPalette();
+            });
+
+            condDiv.appendChild(chip);
         });
 
-        container.appendChild(chip);
-    });
+        container.appendChild(condDiv);
+    }
+
+    // Show opcodes section
+    if (opcodes.length > 0) {
+        const opcodeLabel = document.createElement('div');
+        opcodeLabel.style.color = '#888';
+        opcodeLabel.style.fontSize = '12px';
+        opcodeLabel.style.marginBottom = '8px';
+        opcodeLabel.textContent = pendingConditional ?
+            `Instructions (will add ${pendingConditional}+X):` :
+            'Instructions:';
+        container.appendChild(opcodeLabel);
+
+        const opcodeDiv = document.createElement('div');
+        opcodeDiv.style.display = 'flex';
+        opcodeDiv.style.flexWrap = 'wrap';
+        opcodeDiv.style.gap = '8px';
+
+        opcodes.forEach(opcode => {
+            const chip = document.createElement('div');
+            chip.className = 'instruction-chip';
+            chip.textContent = pendingConditional ? `${pendingConditional}+${opcode}` : opcode;
+            chip.style.cursor = 'pointer';
+
+            if (pendingConditional) {
+                chip.style.background = '#4a3d20';
+                chip.style.borderColor = '#ffc959';
+                chip.style.color = '#ffc959';
+            }
+
+            chip.addEventListener('click', () => {
+                addInstructionToProgram(opcode, pendingConditional);
+                pendingConditional = null;
+                renderInstructionsPalette();
+            });
+
+            opcodeDiv.appendChild(chip);
+        });
+
+        container.appendChild(opcodeDiv);
+    }
 
     if (activeInstructions.length === 0) {
         container.innerHTML = '<div style="color: #666;">No instructions available</div>';
     }
 }
 
-// Global variable to track which function is selected for editing
-let selectedFunctionIndex = 0;
-
-function addInstructionToProgram(instrName, funcIndex = selectedFunctionIndex) {
+function addInstructionToProgram(opcodeName, condName = null, funcIndex = selectedFunctionIndex) {
     if (!gameEngine.levelData) return;
 
     const func = gameEngine.levelData.functions[funcIndex];
@@ -197,14 +291,16 @@ function addInstructionToProgram(instrName, funcIndex = selectedFunctionIndex) {
     const INST = { NO: 0, FW: 1, TL: 2, TR: 3, P1: 4, P2: 5, P3: 6, F0: 7, F1: 8, F2: 9 };
     const COND = { C1: 1, C2: 2, C3: 3 };
 
-    let code;
-    if (INST[instrName] !== undefined) {
-        code = INST[instrName];
-    } else if (COND[instrName] !== undefined) {
-        code = COND[instrName] * 100;
-    } else {
+    let opcodeValue = INST[opcodeName];
+    let condValue = condName ? COND[condName] : 0;
+
+    if (opcodeValue === undefined) {
+        alert('Invalid opcode: ' + opcodeName);
         return;
     }
+
+    // Combine: instruction = condition * 100 + opcode
+    const code = condValue * 100 + opcodeValue;
 
     // Add instruction
     currentProgram[funcIndex] = [...program, code];

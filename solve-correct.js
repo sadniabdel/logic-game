@@ -249,7 +249,7 @@ function main() {
         const levelData = JSON.parse(fs.readFileSync(levelPath, 'utf8'));
         const maxAllowed = levelData.functions && levelData.functions[0] ? levelData.functions[0].length : 12;
 
-        const result = solveLevel(levelData, 10000);
+        const result = solveLevel(levelData, 60000); // 60 second timeout per level
 
         if (result.solved) {
             console.log(`✅ Level ${levelNum}: Solved in ${result.steps} steps (tested ${result.tested} programs)`);

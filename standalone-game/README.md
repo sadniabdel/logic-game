@@ -32,11 +32,42 @@ standalone-game/
 
 ## How to Play
 
-1. **Open the game**: Open `index.html` in any modern browser
-2. **Select a level**: Use the dropdown in the top-right (Levels 1-116)
-3. **Auto-solve**: Click "Auto-Solve" to find a solution automatically
-4. **Run program**: Click "Run" to execute the program
-5. **Step through**: Click "Step" to debug step-by-step
+### Quick Start
+
+**Option 1: Using Local Server (Recommended)**
+
+Linux/Mac:
+```bash
+cd standalone-game
+./start-server.sh
+# Open browser to http://localhost:8000
+```
+
+Windows:
+```cmd
+cd standalone-game
+start-server.bat
+# Open browser to http://localhost:8000
+```
+
+**Option 2: Direct File Access**
+
+If you get CORS errors when opening `index.html` directly, you need to run a local server. The easiest way:
+
+```bash
+# In the standalone-game folder
+python3 -m http.server 8000
+# Or: python -m http.server 8000
+```
+
+Then open: `http://localhost:8000`
+
+### Playing the Game
+
+1. **Select a level**: Use the dropdown in the top-right (Levels 1-116)
+2. **Auto-solve**: Click "Auto-Solve" to find a solution automatically
+3. **Run program**: Click "Run" to execute the program
+4. **Step through**: Click "Step" to debug step-by-step
 
 ## Game Rules
 

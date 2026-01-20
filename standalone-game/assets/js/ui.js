@@ -2,12 +2,14 @@
 
 let gameEngine;
 let solver;
+let smartSolver;
 let currentProgram = [];
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     gameEngine = new GameEngine();
     solver = new Solver();
+    smartSolver = new SmartSolver();
 
     initializeLevelSelector();
     setupEventListeners();
@@ -669,16 +671,16 @@ async function autoSolve() {
 
     const output = document.getElementById('solver-output');
     output.classList.add('show');
-    output.innerHTML = '<div>Searching for solution...</div>';
+    output.innerHTML = '<div>🧠 Smart beam search solving...</div>';
 
-    solver.stop();
+    smartSolver.stop();
 
     try {
-        const result = await solver.solve(
+        const result = await smartSolver.solve(
             gameEngine.levelData,
             30000,
             (tested, depth) => {
-                output.innerHTML = `<div>Depth ${depth}... (${tested.toLocaleString()} programs)</div>`;
+                output.innerHTML = `<div>${depth}... (${tested.toLocaleString()} programs)</div>`;
             }
         );
 
@@ -690,7 +692,7 @@ async function autoSolve() {
 
             result.program.forEach((func, i) => {
                 if (func.length > 0) {
-                    const funcStr = func.map(instr => solver.instructionToString(instr)).join(', ');
+                    const funcStr = func.map(instr => smartSolver.instructionToString(instr)).join(', ');
                     html += `<div><strong>F${i}:</strong> [${funcStr}]</div>`;
                 }
             });

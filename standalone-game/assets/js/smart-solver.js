@@ -18,13 +18,13 @@ class SmartSolver {
         const instructions = this.buildPrioritizedInstructions(availableInstructions, analysis);
 
         let tested = 0;
-        const beamWidth = 100; // Keep top 100 programs at each step
+        const beamWidth = 200; // Keep top 200 programs at each step
 
         // Start with empty programs
         let beam = [functionLengths.map(() => [])];
 
         // Progressively build programs
-        const maxTotalInstr = Math.min(functionLengths.reduce((a, b) => a + b, 0), 8);
+        const maxTotalInstr = Math.min(functionLengths.reduce((a, b) => a + b, 0), 10);
 
         for (let depth = 1; depth <= maxTotalInstr; depth++) {
             if (!this.running) return { solved: false, tested, cancelled: true };
@@ -75,8 +75,19 @@ class SmartSolver {
             candidates.sort((a, b) => b.fitness - a.fitness);
             beam = candidates.slice(0, beamWidth).map(c => c.program);
 
+            if (onProgress) {
+                const avgFitness = beam.length > 0
+                    ? (candidates.slice(0, beamWidth).reduce((s, c) => s + c.fitness, 0) / Math.min(beamWidth, candidates.length)).toFixed(1)
+                    : 0;
+                onProgress(tested, `depth ${depth}, beam ${beam.length}, avg fitness ${avgFitness}`);
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+
             if (beam.length === 0) {
-                // Dead end, restart with different strategy
+                // Dead end - no promising programs found
+                if (onProgress) {
+                    onProgress(tested, `beam died at depth ${depth}`);
+                }
                 break;
             }
         }
@@ -263,9 +274,10 @@ class SmartSolver {
                 case INST.F1:
                 case INST.F2: {
                     const funcIndex = opcode - INST.F0;
-                    if (programFunctions[funcIndex]) {
+                    if (programFunctions[funcIndex] && programFunctions[funcIndex].length > 0) {
                         state.stack = [...programFunctions[funcIndex], ...state.stack];
                     }
+                    // If function is empty, just skip (don't crash)
                     break;
                 }
             }
@@ -277,14 +289,23 @@ class SmartSolver {
         const terminated = state.stack.length === 0;
 
         let fitness = 0;
-        fitness += starsCollected * 100; // Collecting stars is most important
-        fitness += uniquePositions * 2;  // Exploring is good
-        fitness -= state.steps * 0.1;    // Prefer shorter programs
+        fitness += starsCollected * 1000; // Collecting stars is extremely important
+        fitness += uniquePositions * 10;   // Exploring is good
+        fitness -= state.steps * 0.05;     // Slight penalty for length
 
-        if (terminated) fitness -= 50;   // Penalize early termination
-        if (state.stack.length > 100) fitness -= 100; // Penalize stack overflow
+        // Don't penalize early termination for partial programs
+        if (!terminated && state.stack.length > 100) {
+            fitness -= 100; // Penalize stack overflow
+        }
 
-        const promising = starsCollected > 0 || uniquePositions > 3;
+        // Be very generous with what's "promising" for partial programs
+        // The goal is to keep the beam alive during early construction
+        const promising = (
+            starsCollected > 0 ||           // Collected any stars
+            uniquePositions >= 2 ||         // Explored at least 2 positions
+            state.steps >= 2 ||             // Executed at least 2 steps
+            !terminated                     // Still has instructions to execute
+        );
 
         return {
             solved: false,

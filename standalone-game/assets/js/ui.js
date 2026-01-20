@@ -43,7 +43,7 @@ function setupEventListeners() {
 
 async function loadLevel(levelNum) {
     try {
-        const response = await fetch(`../../assets/zzle-levels/${levelNum}.json`);
+        const response = await fetch(`../assets/zzle-levels/${levelNum}.json`);
         const levelData = await response.json();
 
         gameEngine.loadLevel(levelData);

@@ -165,12 +165,61 @@ function renderInstructionsPalette() {
             chip.classList.add('conditional');
         }
 
+        // Make clickable - adds to currently selected function (F0 by default)
+        chip.addEventListener('click', () => {
+            addInstructionToProgram(instr, selectedFunctionIndex);
+        });
+
         container.appendChild(chip);
     });
 
     if (activeInstructions.length === 0) {
         container.innerHTML = '<div style="color: #666;">No instructions available</div>';
     }
+}
+
+// Global variable to track which function is selected for editing
+let selectedFunctionIndex = 0;
+
+function addInstructionToProgram(instrName, funcIndex = selectedFunctionIndex) {
+    if (!gameEngine.levelData) return;
+
+    const func = gameEngine.levelData.functions[funcIndex];
+    const program = currentProgram[funcIndex] || [];
+
+    // Check if function is full
+    if (program.length >= func.length) {
+        alert(`Function F${funcIndex} is full (max ${func.length} instructions)`);
+        return;
+    }
+
+    // Convert instruction name to code
+    const INST = { NO: 0, FW: 1, TL: 2, TR: 3, P1: 4, P2: 5, P3: 6, F0: 7, F1: 8, F2: 9 };
+    const COND = { C1: 1, C2: 2, C3: 3 };
+
+    let code;
+    if (INST[instrName] !== undefined) {
+        code = INST[instrName];
+    } else if (COND[instrName] !== undefined) {
+        code = COND[instrName] * 100;
+    } else {
+        return;
+    }
+
+    // Add instruction
+    currentProgram[funcIndex] = [...program, code];
+    renderProgramEditor();
+}
+
+function removeInstructionFromProgram(funcIndex, instrIndex) {
+    const program = currentProgram[funcIndex] || [];
+    currentProgram[funcIndex] = program.filter((_, i) => i !== instrIndex);
+    renderProgramEditor();
+}
+
+function clearFunction(funcIndex) {
+    currentProgram[funcIndex] = [];
+    renderProgramEditor();
 }
 
 function renderProgramEditor() {
@@ -184,38 +233,88 @@ function renderProgramEditor() {
     functions.forEach((func, index) => {
         const funcDiv = document.createElement('div');
         funcDiv.className = 'function-slot';
+        if (index === selectedFunctionIndex) {
+            funcDiv.classList.add('selected');
+        }
 
         const header = document.createElement('div');
         header.className = 'function-header';
+
+        const nameSection = document.createElement('div');
+        nameSection.style.display = 'flex';
+        nameSection.style.alignItems = 'center';
+        nameSection.style.gap = '10px';
 
         const name = document.createElement('div');
         name.className = 'function-name';
         name.textContent = `F${index}`;
 
+        const selectBtn = document.createElement('button');
+        selectBtn.textContent = index === selectedFunctionIndex ? '✓ Selected' : 'Select';
+        selectBtn.style.padding = '2px 8px';
+        selectBtn.style.fontSize = '11px';
+        selectBtn.style.background = index === selectedFunctionIndex ? '#5562EB' : '#3a3940';
+        selectBtn.style.color = 'white';
+        selectBtn.style.border = 'none';
+        selectBtn.style.borderRadius = '3px';
+        selectBtn.style.cursor = 'pointer';
+        selectBtn.addEventListener('click', () => {
+            selectedFunctionIndex = index;
+            renderProgramEditor();
+        });
+
+        nameSection.appendChild(name);
+        nameSection.appendChild(selectBtn);
+
+        const controls = document.createElement('div');
+        controls.style.display = 'flex';
+        controls.style.alignItems = 'center';
+        controls.style.gap = '10px';
+
         const length = document.createElement('div');
         length.className = 'function-length';
-        length.textContent = `Max: ${func.length}`;
+        const program = currentProgram[index] || [];
+        length.textContent = `${program.length}/${func.length}`;
 
-        header.appendChild(name);
-        header.appendChild(length);
+        const clearBtn = document.createElement('button');
+        clearBtn.textContent = 'Clear';
+        clearBtn.style.padding = '2px 8px';
+        clearBtn.style.fontSize = '11px';
+        clearBtn.style.background = '#dc3545';
+        clearBtn.style.color = 'white';
+        clearBtn.style.border = 'none';
+        clearBtn.style.borderRadius = '3px';
+        clearBtn.style.cursor = 'pointer';
+        clearBtn.addEventListener('click', () => clearFunction(index));
+
+        controls.appendChild(length);
+        controls.appendChild(clearBtn);
+
+        header.appendChild(nameSection);
+        header.appendChild(controls);
 
         const slots = document.createElement('div');
         slots.className = 'instruction-slots';
 
-        const program = currentProgram[index] || [];
+        // Show all available slots
+        for (let i = 0; i < func.length; i++) {
+            const slot = document.createElement('div');
+            slot.className = 'instruction-slot';
 
-        if (program.length === 0) {
-            const emptySlot = document.createElement('div');
-            emptySlot.className = 'instruction-slot empty';
-            emptySlot.textContent = 'Empty';
-            slots.appendChild(emptySlot);
-        } else {
-            program.forEach(instr => {
-                const slot = document.createElement('div');
-                slot.className = 'instruction-slot';
-                slot.textContent = gameEngine.instructionToString(instr);
-                slots.appendChild(slot);
-            });
+            if (i < program.length) {
+                // Filled slot
+                slot.textContent = gameEngine.instructionToString(program[i]);
+                slot.style.cursor = 'pointer';
+                slot.title = 'Click to remove';
+                slot.addEventListener('click', () => removeInstructionFromProgram(index, i));
+            } else {
+                // Empty slot
+                slot.classList.add('empty');
+                slot.textContent = `${i + 1}`;
+                slot.style.cursor = 'default';
+            }
+
+            slots.appendChild(slot);
         }
 
         funcDiv.appendChild(header);
